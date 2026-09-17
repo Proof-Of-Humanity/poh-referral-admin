@@ -1,0 +1,62 @@
+@import 'tailwindcss';
+
+/* Semantic colors follow Apple's dark-mode system palette; labels and fills are
+   translucent so panes layer correctly over the base. */
+@theme {
+  --color-canvas: #131316;
+  --color-surface: #1c1c1e;
+  --color-surface-raised: #2c2c2e;
+  --color-material: rgba(30, 30, 32, 0.72);
+  --color-fill: rgba(120, 120, 128, 0.2);
+  --color-fill-strong: rgba(120, 120, 128, 0.34);
+  --color-line: rgba(255, 255, 255, 0.09);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+  --color-fg: rgba(255, 255, 255, 0.94);
+  --color-fg-muted: rgba(235, 235, 245, 0.6);
+  --color-fg-faint: rgba(235, 235, 245, 0.35);
+  --color-accent: #ff9f0a;
+  --color-accent-strong: #ffb340;
+  --color-success: #30d158;
+  --color-danger: #ff453a;
+  --color-info: #0a84ff;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter', system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif;
+  --font-mono: 'SF Mono', ui-monospace, 'JetBrains Mono', Menlo, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    background-color: var(--color-canvas);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    letter-spacing: inherit;
+  }
+  /* Headings use the display face and tighter tracking, as on Apple surfaces. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+  }
+  ::selection {
+    background: color-mix(in srgb, var(--color-accent) 35%, transparent);
+  }
+}
+
+@keyframes slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(300%);
+  }
+}

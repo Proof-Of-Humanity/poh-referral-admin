@@ -1,0 +1,47 @@
+{
+  "name": "@atlas/poh-admin-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^24.18.0"
+  },
+  "volta": {
+    "node": "24.18.0",
+    "yarn": "4.9.2"
+  },
+  "scripts": {
+    "setup": "cp .env.example .env",
+    "start:dev": "vite --port 3100",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 3100",
+    "gql:schema": "node scripts/introspect-schema.mjs",
+    "gql:codegen": "graphql-codegen --config codegen.yml",
+    "start:staging": "vite --mode staging --port 3101"
+  },
+  "dependencies": {
+    "@reown/appkit": "1.7.20",
+    "@reown/appkit-adapter-wagmi": "1.7.20",
+    "@tanstack/react-query": "^5.80.0",
+    "graphql": "^16.8.1",
+    "graphql-request": "^7.1.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.0",
+    "viem": "2.55.16",
+    "wagmi": "2.16.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.3",
+    "@graphql-codegen/typescript": "^4.1.0",
+    "@graphql-codegen/typescript-graphql-request": "^6.2.0",
+    "@graphql-codegen/typescript-operations": "^4.3.0",
+    "@tailwindcss/vite": "^4.1.8",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@vitejs/plugin-react": "^4.5.0",
+    "tailwindcss": "^4.1.8",
+    "typescript": "^5.8.2",
+    "vite": "^6.3.5"
+  }
+}
