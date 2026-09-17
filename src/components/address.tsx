@@ -1,0 +1,34 @@
+import { useState } from 'react';
+
+import { shortAddress } from '../lib/format';
+
+import { CheckIcon, CopyIcon } from './icons';
+
+export const AddressChip = ({ address }: { address: string }) => {
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    await navigator.clipboard.writeText(address);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200);
+  };
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      title={address}
+      className="group -mx-1.5 inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 font-mono text-[12.5px] text-fg transition-colors hover:bg-fill hover:text-accent"
+    >
+      {copied ? (
+        <>
+          copied
+          <CheckIcon className="size-3 text-success" />
+        </>
+      ) : (
+        <>
+          {shortAddress(address)}
+          <CopyIcon className="size-3 opacity-0 transition-opacity group-hover:opacity-60" />
+        </>
+      )}
+    </button>
+  );
+};
