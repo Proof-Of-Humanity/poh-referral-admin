@@ -1,0 +1,258 @@
+import { useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+
+import {
+  ArrowRightIcon,
+  BoltIcon,
+  ClockIcon,
+  CoinIcon,
+  FlagIcon,
+  ListIcon,
+  StarIcon,
+  type IconComponent,
+} from './icons';
+import { Badge } from './badge';
+import { Button } from './button';
+import { Modal } from './modal';
+import type { Tone } from './tone';
+
+const SEEN_KEY = 'poh-admin-tutorial-seen';
+
+export const tutorialSeen = {
+  get: () => localStorage.getItem(SEEN_KEY) === '1',
+  set: () => localStorage.setItem(SEEN_KEY, '1'),
+};
+
+type Step = {
+  title: string;
+  icon: IconComponent;
+  body: ReactNode;
+  link?: { to: string; label: string };
+};
+
+const Pill = ({ tone, children }: { tone: Tone; children: ReactNode }) => (
+  <span className="mx-0.5 -my-0.5 inline-block align-middle">
+    <Badge tone={tone}>{children}</Badge>
+  </span>
+);
+
+const Rule = ({ children }: { children: ReactNode }) => (
+  <li className="flex gap-2">
+    <span className="mt-[0.6rem] size-1 shrink-0 rounded-full bg-accent" />
+    <span>{children}</span>
+  </li>
+);
+
+const Row = ({ tone, label, children }: { tone: Tone; label: string; children: ReactNode }) => (
+  <div className="grid grid-cols-[7.5rem_1fr] gap-3">
+    <dt>
+      <Badge tone={tone}>{label}</Badge>
+    </dt>
+    <dd className="text-sm">{children}</dd>
+  </div>
+);
+
+/**
+ * The referrer reads a plain-language version of every decision made here, in their own dashboard.
+ * Quoting it verbatim is the quickest way to judge whether a decision will land the way you meant.
+ */
+const TheyRead = ({ children }: { children: ReactNode }) => (
+  <p className="mt-3 border-l-2 border-line-strong pl-3 text-[13px] text-fg-muted italic">They read: “{children}”</p>
+);
+
+const steps: Step[] = [
+  {
+    title: 'What a referral is',
+    icon: BoltIcon,
+    body: (
+      <>
+        <p>
+          Someone shared an invite link, a new human joined through it and got verified. That pair — the{' '}
+          <strong>referrer</strong> who invited and the <strong>referee</strong> who joined — is one referral, worth a
+          PNK reward to the referrer. The amount is fixed per referral and shown in the Reward column.
+        </p>
+        <p className="mt-3">
+          A bot pays them automatically, <strong>once an hour</strong>, with no human in the loop. Nobody approves
+          payouts here. Your job is the opposite: stop the ones that should not be paid, before the bot gets to them.
+        </p>
+        <p className="mt-3 text-fg-muted">
+          The waits and limits below are the production defaults. Staging runs shorter and smaller ones.
+        </p>
+      </>
+    ),
+  },
+  {
+    title: 'The clock you are working against',
+    icon: ClockIcon,
+    body: (
+      <>
+        <p>Two deadlines decide every referral, and they run in opposite directions:</p>
+        <ul className="mt-3 space-y-1.5">
+          <Rule>
+            <strong>30 days</strong> from joining for the referee to get verified. Miss it and the referral expires
+            unpaid — no action needed from you.
+          </Rule>
+          <Rule>
+            <strong>2 days</strong> after the referee is verified before the bot may pay. This is your window, and it is
+            the only time the referral is genuinely yours to stop.
+          </Rule>
+        </ul>
+        <p className="mt-3">
+          The reward must clear that 2-day wait <em>before</em> the 30-day deadline, so a referee who verifies on day 29
+          is already too late.
+        </p>
+        <p className="mt-3 text-fg-muted">
+          The referrer watches this as five stages: Started → In Progress → Verified → Reward Pending → Paid.
+        </p>
+      </>
+    ),
+  },
+  {
+    title: 'Review status — your verdict on one referral',
+    icon: ListIcon,
+    body: (
+      <>
+        <dl className="space-y-2.5">
+          <Row tone="info" label="Active">
+            The default. Nobody has looked at it, and the bot will pay it once the 2 days are up.
+          </Row>
+          <Row tone="accent" label="Needs review">
+            Parked. The bot skips it until you decide. Going over the monthly cap parks referrals here by itself, with
+            the reason filled in.
+          </Row>
+          <Row tone="success" label="Approved">
+            Paid exactly like Active. The difference is for you: it marks the ones a human has actually checked.
+          </Row>
+          <Row tone="danger" label="Rejected">
+            Never paid. You can undo it right up until the referral is reserved into a payout.
+          </Row>
+        </dl>
+        <TheyRead>This referral needs admin review before payout.</TheyRead>
+        <p className="mt-3">
+          Every change needs a <strong>reason</strong>. It is stored on the referral and the next admin will read it, so
+          write it for them rather than for yourself.
+        </p>
+      </>
+    ),
+    link: { to: '/referrals?reviewStatus=NeedsReview', label: 'Open the review queue' },
+  },
+  {
+    title: 'Flags — your verdict on a person',
+    icon: FlagIcon,
+    body: (
+      <>
+        <p>
+          A flag applies to a <strong>humanity</strong>, not a row. Flag someone and every referral they appear in stops
+          — the ones where they invited, and the one where they joined.
+        </p>
+        <ul className="mt-3 space-y-1.5">
+          <Rule>
+            Reach for this when the problem is the person: suspected sybils, farmed accounts, anything you want frozen
+            while you dig
+          </Rule>
+          <Rule>It applies from the next bot run. Money already paid stays paid</Rule>
+          <Rule>Unflagging restores everything at once, because no review status was ever touched</Rule>
+        </ul>
+        <TheyRead>Referral rewards are paused while this invitee’s profile is flagged.</TheyRead>
+      </>
+    ),
+    link: { to: '/flags', label: 'Open flagged humanities' },
+  },
+  {
+    title: 'The monthly cap, and who escapes it',
+    icon: StarIcon,
+    body: (
+      <>
+        <p>
+          A referrer is paid for at most <strong>25 referrals per calendar month</strong>. Number 26 is not thrown away
+          — it lands in <Pill tone="accent">Needs review</Pill> for you to judge.
+        </p>
+        <p className="mt-3">
+          <strong>Whitelisting</strong> a humanity lifts the cap for them entirely, and stops it parking their referrals
+          in future. It does not reach backwards: anything already parked stays parked until you set it to Active or
+          Approved, and the bot takes it from there.
+        </p>
+        <p className="mt-3 text-fg-muted">
+          The referrer sees their own count, and a “Cap reached” marker when they hit it.
+        </p>
+      </>
+    ),
+    link: { to: '/whitelist', label: 'Open the cap whitelist' },
+  },
+  {
+    title: 'Payout status — where you lose control',
+    icon: CoinIcon,
+    body: (
+      <>
+        <dl className="space-y-2.5">
+          <Row tone="muted" label="Unassigned">
+            Not picked up yet. Everything on the previous screens still works.
+          </Row>
+          <Row tone="accent" label="Not sent">
+            Reserved into a batch and already signed. <strong>The referral is frozen</strong> — status changes are
+            refused from here on.
+          </Row>
+          <Row tone="info" label="Pending">
+            Broadcast, waiting on the chain.
+          </Row>
+          <Row tone="success" label="Confirmed">
+            Paid. The PNK is in the referrer’s wallet.
+          </Row>
+        </dl>
+        <p className="mt-3">
+          One rule covers all of it: while a payout is still <Pill tone="muted">Unassigned</Pill> you can stop it, and
+          after that you cannot. A flag or rejection later changes nothing about money already in flight — which the
+          referrer is told plainly.
+        </p>
+        <TheyRead>This referral was rejected, but the payout already in flight is unaffected.</TheyRead>
+      </>
+    ),
+    link: { to: '/referrals?payout=Unassigned', label: 'Open unassigned referrals' },
+  },
+];
+
+export const Tutorial = ({ onClose }: { onClose: () => void }) => {
+  const [index, setIndex] = useState(0);
+  const step = steps[index]!;
+  const isLast = index === steps.length - 1;
+
+  const finish = () => {
+    tutorialSeen.set();
+    onClose();
+  };
+
+  return (
+    <Modal title={`How it works · ${index + 1}/${steps.length}`} onClose={finish}>
+      <div className="flex items-center gap-2.5">
+        <div className="grid size-8 place-items-center rounded-[10px] bg-accent/15 text-accent">
+          <step.icon className="size-[18px]" />
+        </div>
+        <h4 className="text-[15px] font-semibold">{step.title}</h4>
+      </div>
+      <div className="mt-3 min-h-[17rem] text-sm leading-relaxed text-fg">{step.body}</div>
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-line pt-4">
+        <div className="flex gap-1.5" aria-hidden>
+          {steps.map((_, dot) => (
+            <span key={dot} className={`h-1.5 w-1.5 rounded-full ${dot === index ? 'bg-accent' : 'bg-line-strong'}`} />
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          {step.link && (
+            <Link
+              to={step.link.to}
+              onClick={finish}
+              className="flex items-center gap-1 text-xs text-fg-muted hover:text-accent"
+            >
+              {step.link.label}
+              <ArrowRightIcon className="size-3.5" />
+            </Link>
+          )}
+          {index > 0 && <Button onClick={() => setIndex(index - 1)}>Back</Button>}
+          <Button variant="primary" onClick={isLast ? finish : () => setIndex(index + 1)}>
+            {isLast ? 'Done' : 'Next'}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
