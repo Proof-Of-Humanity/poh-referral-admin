@@ -15,7 +15,6 @@
     "start:dev": "vite --port 3100",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --port 3100",
-    "gql:schema": "node scripts/introspect-schema.mjs",
     "gql:codegen": "graphql-codegen --config codegen.yml",
     "start:staging": "vite --mode staging --port 3101"
   },
@@ -25,6 +24,7 @@
     "@tanstack/react-query": "^5.80.0",
     "graphql": "^16.8.1",
     "graphql-request": "^7.1.2",
+    "graphql-tag": "^2.12.7",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0",

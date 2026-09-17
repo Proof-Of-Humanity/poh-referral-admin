@@ -2,3 +2,5 @@ node_modules
 .env
 dist
 schema.json
+.yarn
+vite.config.ts.timestamp-*.mjs
