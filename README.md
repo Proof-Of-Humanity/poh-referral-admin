@@ -24,8 +24,3 @@ Switching environments clears the session, because each one issues its own JWT.
 | Production | https://atlas.production.kleros.link/graphql |
 
 Signing in needs a wallet holding the `pohadmin` role on the selected environment.
-
-## Reading this repository
-
-`main` is empty on purpose. The codebase arrives as a stack of pull requests, each a
-self-contained slice, ordered so every pull request depends only on the ones before it.

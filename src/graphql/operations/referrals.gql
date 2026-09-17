@@ -1,0 +1,71 @@
+fragment ReferralFields on AdminReferral {
+  id
+  createdAt
+  refereeHumanityId
+  referrerHumanityId
+  reviewStatus
+  reviewReason
+  rewardAmount
+  payoutTransaction {
+    status
+    txHash
+  }
+  refereeFlag {
+    isFlagged
+  }
+  referrerFlag {
+    isFlagged
+  }
+}
+
+query Referrals($pagination: ReferralPaginationInput!, $filter: AdminReferralFilter) {
+  adminPohReferrals(pagination: $pagination, filter: $filter) {
+    count
+    hasNextPage
+    items {
+      item {
+        ...ReferralFields
+      }
+    }
+  }
+}
+
+query ReferralCounts {
+  total: adminPohReferrals(pagination: { take: 1 }) {
+    count
+  }
+  needsReview: adminPohReferrals(pagination: { take: 1 }, filter: { reviewStatus: [NeedsReview] }) {
+    count
+  }
+  active: adminPohReferrals(pagination: { take: 1 }, filter: { reviewStatus: [Active] }) {
+    count
+  }
+  approved: adminPohReferrals(pagination: { take: 1 }, filter: { reviewStatus: [Approved] }) {
+    count
+  }
+  rejected: adminPohReferrals(pagination: { take: 1 }, filter: { reviewStatus: [Rejected] }) {
+    count
+  }
+  unassigned: adminPohReferrals(pagination: { take: 1 }, filter: { payoutStatus: [Unassigned] }) {
+    count
+  }
+  notSent: adminPohReferrals(pagination: { take: 1 }, filter: { payoutStatus: [NotSent] }) {
+    count
+  }
+  pending: adminPohReferrals(pagination: { take: 1 }, filter: { payoutStatus: [Pending] }) {
+    count
+  }
+  confirmed: adminPohReferrals(pagination: { take: 1 }, filter: { payoutStatus: [Confirmed] }) {
+    count
+  }
+}
+
+mutation UpdateReviewStatus($refereeHumanityId: Address!, $reviewStatus: PohReferralReviewStatus!, $reason: String!) {
+  updatePohReferralReviewStatusThroughAdmin(
+    refereeHumanityId: $refereeHumanityId
+    reviewStatus: $reviewStatus
+    reason: $reason
+  ) {
+    id
+  }
+}

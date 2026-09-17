@@ -1,0 +1,7 @@
+mutation Nonce($address: Address!) {
+  nonce(address: $address)
+}
+
+mutation Login($message: String!, $signature: String!) {
+  login(message: $message, signature: $signature)
+}

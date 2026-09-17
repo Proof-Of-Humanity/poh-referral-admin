@@ -1,0 +1,41 @@
+query FlaggedHumanities($pagination: AdminHumanityPaginationInput!) {
+  adminPohFlaggedHumanities(pagination: $pagination) {
+    count
+    hasNextPage
+    items {
+      item {
+        id
+        humanityId
+        isFlagged
+        reason
+      }
+    }
+  }
+}
+
+query WhitelistedHumanities($pagination: AdminHumanityPaginationInput!) {
+  adminPohWhitelistedHumanities(pagination: $pagination) {
+    count
+    hasNextPage
+    items {
+      item {
+        id
+        humanityId
+        isWhitelisted
+        reason
+      }
+    }
+  }
+}
+
+mutation SetHumanityFlag($humanityId: Address!, $isFlagged: Boolean!, $reason: String!) {
+  setHumanityFlagThroughAdmin(humanityId: $humanityId, isFlagged: $isFlagged, reason: $reason) {
+    id
+  }
+}
+
+mutation SetMonthlyCapWhitelist($humanityId: Address!, $isWhitelisted: Boolean!, $reason: String!) {
+  setPohMonthlyCapWhitelistThroughAdmin(humanityId: $humanityId, isWhitelisted: $isWhitelisted, reason: $reason) {
+    id
+  }
+}
