@@ -22,10 +22,10 @@ export type IconComponent = (props: IconProps) => ReactNode;
 
 export const GaugeIcon = (props: IconProps) => (
   <Glyph {...props}>
-    <path d="M2.5 12a5.5 5.5 0 1 1 11 0" />
-    <path d="M8 12V9.5" />
-    <path d="M10.6 6.6 8.9 8.6" />
-    <circle cx="8" cy="12" r="0.9" fill="currentColor" stroke="none" />
+    <path d="M2.5 10.5a5.5 5.5 0 1 1 11 0" />
+    <path d="M8 10.5V8" />
+    <path d="M10.6 5.1 8.9 7.1" />
+    <circle cx="8" cy="10.5" r="0.75" fill="currentColor" stroke="none" />
   </Glyph>
 );
 
@@ -41,7 +41,7 @@ export const ReferralIcon = (props: IconProps) => (
 export const FlagIcon = (props: IconProps) => (
   <Glyph {...props}>
     <path d="M3.5 14V2.6" />
-    <path d="M3.5 3.2h7.8l-1.7 2.4 1.7 2.4H3.5" />
+    <path d="M3.5 3.2h9.2l-2 2.4 2 2.4H3.5" />
   </Glyph>
 );
 
@@ -54,9 +54,9 @@ export const StarIcon = (props: IconProps) => (
 export const ListIcon = (props: IconProps) => (
   <Glyph {...props}>
     <path d="M6 4h8M6 8h8M6 12h5" />
-    <circle cx="3" cy="4" r="0.9" fill="currentColor" stroke="none" />
-    <circle cx="3" cy="8" r="0.9" fill="currentColor" stroke="none" />
-    <circle cx="3" cy="12" r="0.9" fill="currentColor" stroke="none" />
+    <circle cx="3" cy="4" r="0.75" fill="currentColor" stroke="none" />
+    <circle cx="3" cy="8" r="0.75" fill="currentColor" stroke="none" />
+    <circle cx="3" cy="12" r="0.75" fill="currentColor" stroke="none" />
   </Glyph>
 );
 
@@ -129,6 +129,12 @@ export const ChevronLeftIcon = (props: IconProps) => (
   </Glyph>
 );
 
+export const ChevronDownIcon = (props: IconProps) => (
+  <Glyph {...props}>
+    <path d="M4 6.5 8 10.5 12 6.5" />
+  </Glyph>
+);
+
 export const ChevronRightIcon = (props: IconProps) => (
   <Glyph {...props}>
     <path d="m6 3 5 5-5 5" />
@@ -146,7 +152,7 @@ export const WalletIcon = (props: IconProps) => (
   <Glyph {...props}>
     <rect x="1.8" y="3.6" width="12.4" height="9" rx="2.4" />
     <path d="M1.8 6.6h12.4" />
-    <circle cx="11.4" cy="9.8" r="0.85" fill="currentColor" stroke="none" />
+    <circle cx="11.4" cy="9.8" r="0.75" fill="currentColor" stroke="none" />
   </Glyph>
 );
 
@@ -167,7 +173,7 @@ export const ShieldIcon = (props: IconProps) => (
 
 export const BoltIcon = (props: IconProps) => (
   <Glyph {...props}>
-    <path d="M9 1.6 3.8 8.9h3.5l-.7 5.5 5.4-7.4H8.4z" />
+    <path d="M8.9 2.4 4.5 8.8h3.1l-.6 4.8 4.7-6.5H8.3z" />
   </Glyph>
 );
 
@@ -209,7 +215,7 @@ export const TrayIcon = (props: IconProps) => (
 
 export const FilterIcon = (props: IconProps) => (
   <Glyph {...props}>
-    <path d="M2.6 4.4h10.8M4.6 8h6.8M6.4 11.6h3.2" />
+    <path d="M2.6 4h10.8M4.6 8h6.8M6.4 12h3.2" />
   </Glyph>
 );
 

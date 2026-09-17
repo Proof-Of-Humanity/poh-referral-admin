@@ -10,6 +10,9 @@
     "node": "24.18.0",
     "yarn": "4.9.2"
   },
+  "resolutions": {
+    "@wagmi/connectors": "5.9.9"
+  },
   "scripts": {
     "setup": "cp .env.example .env",
     "start:dev": "vite --port 3100",
@@ -19,17 +22,19 @@
     "start:staging": "vite --mode staging --port 3101"
   },
   "dependencies": {
+    "@kleros/kleros-app": "3.1.0",
     "@reown/appkit": "1.7.20",
     "@reown/appkit-adapter-wagmi": "1.7.20",
     "@tanstack/react-query": "^5.80.0",
     "graphql": "^16.8.1",
     "graphql-request": "^7.1.2",
     "graphql-tag": "^2.12.7",
+    "jose": "^5.9.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.0",
     "viem": "2.55.16",
-    "wagmi": "2.16.0"
+    "wagmi": "2.16.9"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.3",

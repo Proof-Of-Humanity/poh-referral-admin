@@ -1,0 +1,28 @@
+import type { ButtonHTMLAttributes } from 'react';
+
+import { cx } from './cx';
+
+type ButtonVariant = 'primary' | 'ghost' | 'danger';
+
+const buttonVariants: Record<ButtonVariant, string> = {
+  primary: 'bg-accent text-black/85 hover:bg-accent-strong',
+  ghost: 'bg-fill-strong text-fg shadow-[inset_0_1px_0_rgba(255,255,255,0.09)] hover:bg-fill-strong/70',
+  danger: 'bg-danger/15 text-danger hover:bg-danger/25',
+};
+
+export const Button = ({
+  variant = 'ghost',
+  className,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant }) => (
+  <button
+    type="button"
+    {...props}
+    className={cx(
+      'inline-flex items-center justify-center gap-1.5 rounded-[10px] px-3 py-1.5 text-[13px] font-medium whitespace-nowrap [&>svg]:shrink-0',
+      'transition-all active:scale-[0.98] disabled:pointer-events-none disabled:opacity-35',
+      buttonVariants[variant],
+      className,
+    )}
+  />
+);

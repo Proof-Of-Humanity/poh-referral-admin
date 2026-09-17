@@ -36,8 +36,7 @@ export const rememberApiEnvironment = (name: ApiEnvironmentName) => localStorage
 
 export const env = {
   graphqlUrl: graphqlUrls[apiEnvironment]!,
+  // AtlasProvider takes the base and appends /graphql itself.
+  atlasUri: graphqlUrls[apiEnvironment]!.replace(/\/graphql$/, ''),
   walletConnectProjectId: required('VITE_WALLET_CONNECT_PROJECT_ID'),
-  devBurnerPrivateKey: import.meta.env.DEV
-    ? (import.meta.env.VITE_DEV_BURNER_PRIVATE_KEY as string | undefined)
-    : undefined,
 };

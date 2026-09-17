@@ -18,16 +18,11 @@ export const AddressChip = ({ address }: { address: string }) => {
       title={address}
       className="group -mx-1.5 inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 font-mono text-[12.5px] text-fg transition-colors hover:bg-fill hover:text-accent"
     >
+      {shortAddress(address)}
       {copied ? (
-        <>
-          copied
-          <CheckIcon className="size-3 text-success" />
-        </>
+        <CheckIcon className="size-3 shrink-0 text-success" />
       ) : (
-        <>
-          {shortAddress(address)}
-          <CopyIcon className="size-3 opacity-0 transition-opacity group-hover:opacity-60" />
-        </>
+        <CopyIcon className="size-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-60" />
       )}
     </button>
   );
