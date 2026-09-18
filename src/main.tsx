@@ -12,7 +12,11 @@ import { env } from './config/env';
 import { wagmiConfig } from './config/wagmi';
 import './styles.css';
 
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
+// Nothing here changes faster than the hourly payout bot, so re-reading it on every navigation buys
+// nothing. Mutations invalidate explicitly, so an admin's own edits still show up at once.
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 30_000 } },
+});
 
 discardTokenFromAnotherStage();
 

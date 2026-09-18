@@ -1,5 +1,5 @@
 import { isAddress } from 'viem';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -75,6 +75,8 @@ export const ReferralsPage = () => {
   const referrals = useQuery({
     queryKey: ['referrals', page, filter],
     enabled: !addressInputInvalid,
+    // Paging keeps the rows already on screen rather than emptying the table into placeholders.
+    placeholderData: keepPreviousData,
     queryFn: () =>
       api.Referrals({
         pagination: {

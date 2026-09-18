@@ -28,7 +28,7 @@ export const PagedTablePanel = ({
   pausedReason,
   children,
 }: {
-  pageQuery: { isPending: boolean; error: unknown; data: PageOfRows | undefined };
+  pageQuery: { isPending: boolean; isFetching: boolean; error: unknown; data: PageOfRows | undefined };
   /** Zero-based, matching the `skip` the API pages with. */
   pageIndex: number;
   rowsPerPage: number;
@@ -97,7 +97,11 @@ export const PagedTablePanel = ({
           {pageQuery.error !== null && <ErrorState error={pageQuery.error} />}
           {rows?.items.length === 0 && <EmptyState>{noRowsMessage}</EmptyState>}
           {hasRows && (
-            <div className="overflow-x-auto">
+            // Fading the old page is enough to say "loading"; replacing it with placeholders is not.
+            <div
+              className={cx('overflow-x-auto transition-opacity', pageQuery.isFetching && 'opacity-50')}
+              aria-busy={pageQuery.isFetching}
+            >
               <table className="w-full text-[13px]">
                 {headerRow}
                 <tbody>{children}</tbody>

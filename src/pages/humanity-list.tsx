@@ -1,5 +1,5 @@
 import { isAddress } from 'viem';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { AddressChip } from '../components/address';
@@ -45,6 +45,8 @@ export const HumanityListPage = (config: HumanityListConfig) => {
 
   const list = useQuery({
     queryKey: [config.queryKey, page],
+    // Paging keeps the rows already on screen rather than emptying the table into placeholders.
+    placeholderData: keepPreviousData,
     queryFn: () =>
       config.list({
         skip: page * PAGE_SIZE,
