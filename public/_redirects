@@ -1,0 +1,4 @@
+# The dashboard is a single-page app: react-router owns every path, and the server has a file only
+# for /. Without this, a reload or a pasted deep link (/login, /referrals) 404s on Netlify — and the
+# environment switcher reloads on purpose, so switching stages looked like a crash.
+/*  /index.html  200
