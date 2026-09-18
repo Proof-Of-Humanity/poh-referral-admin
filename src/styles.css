@@ -52,11 +52,8 @@
   }
 }
 
-@keyframes slide {
-  from {
-    transform: translateX(-100%);
-  }
+@keyframes shimmer {
   to {
-    transform: translateX(300%);
+    transform: translateX(100%);
   }
 }

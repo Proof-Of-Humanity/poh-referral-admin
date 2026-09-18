@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAccount, useDisconnect } from 'wagmi';
 
-import { atlasClaims, isPohAdmin } from '../auth/admin-session';
+import { atlasClaims, isPohAdmin, rememberTokenStage } from '../auth/admin-session';
 import { ApiEnvironmentSelect } from '../components/api-environment';
 import { KeyIcon, ShieldIcon, WalletIcon, WarningIcon, XIcon } from '../components/icons';
 import { Button } from '../components/button';
@@ -29,6 +29,7 @@ export const LoginPage = () => {
     setError(null);
     try {
       await authoriseUser();
+      rememberTokenStage();
       navigate(destination, { replace: true });
     } catch (failure) {
       setError(failure);

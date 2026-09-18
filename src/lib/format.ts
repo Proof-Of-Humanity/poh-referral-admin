@@ -24,3 +24,7 @@ export const formatRelative = (iso: string) => {
   }
   return 'just now';
 };
+
+// viem checks the checksum of a mixed-case address, so a mistyped one is refused even at full length.
+// Lowercasing it is the fix a reader can act on.
+export const INVALID_ADDRESS_HINT = 'Not a valid address. Check for a typo, or paste it in lowercase.';
