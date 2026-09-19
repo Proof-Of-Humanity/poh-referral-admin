@@ -8,7 +8,7 @@ import { cx } from './cx';
 export const Skeleton = ({ className, delayMs = 0 }: { className?: string; delayMs?: number }) => (
   <span className={cx('relative block overflow-hidden rounded-[5px] bg-fill', className)}>
     <span
-      className="absolute inset-0 -translate-x-full animate-[shimmer_1.6s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/[0.07] to-transparent"
+      className="absolute inset-0 -translate-x-full animate-[shimmer_1.6s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/[0.07] to-transparent motion-reduce:animate-none"
       style={{ animationDelay: `${delayMs}ms` }}
     />
   </span>
