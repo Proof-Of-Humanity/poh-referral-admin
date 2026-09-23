@@ -63,7 +63,8 @@ export const ReferralsPage = () => {
 
   const reviewStatus = enumFromSearchParam(searchParams.get('reviewStatus'), reviewStatusOptions);
   const payoutStatus = enumFromSearchParam(searchParams.get('payout'), payoutFilterOptions);
-  const addressInput = searchParams.get('referee') ?? '';
+  const refereeInput = searchParams.get('referee') ?? '';
+  const referrerInput = searchParams.get('referrer') ?? '';
 
   const setFilter = (key: string, value: string) => {
     setSearchParams(
@@ -78,11 +79,14 @@ export const ReferralsPage = () => {
   };
 
   // An unparseable address must never fall through to an unfiltered list.
-  const addressInputInvalid = addressInput !== '' && !isAddress(addressInput);
+  const refereeInputInvalid = refereeInput !== '' && !isAddress(refereeInput);
+  const referrerInputInvalid = referrerInput !== '' && !isAddress(referrerInput);
+  const addressInputInvalid = refereeInputInvalid || referrerInputInvalid;
   const filter: AdminReferralFilter = {
     reviewStatus: reviewStatus ? [reviewStatus] : undefined,
     payoutStatus: payoutStatus ? [payoutStatus] : undefined,
-    refereeHumanityId: addressInput || undefined,
+    refereeHumanityId: refereeInput || undefined,
+    referrerHumanityId: referrerInput || undefined,
   };
 
   const referrals = useQuery({
@@ -109,7 +113,7 @@ export const ReferralsPage = () => {
     <>
       <PageHeader title="Referrals" subtitle="Every referral attribution, with its review and payout state." />
       <Panel className="mb-5" title="Filters" icon={FilterIcon}>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <Field label="Review status">
             <Select value={reviewStatus} onChange={(event) => setFilter('reviewStatus', event.target.value)}>
               <option value="">Any</option>
@@ -132,12 +136,22 @@ export const ReferralsPage = () => {
           </Field>
           <Field
             label="Referee humanity"
-            hint={addressInputInvalid ? INVALID_ADDRESS_HINT : 'Filter by the referee\u2019s full address'}
+            hint={refereeInputInvalid ? INVALID_ADDRESS_HINT : 'Filter by the referee\u2019s full address'}
           >
             <SearchInput
               placeholder="0x…"
-              value={addressInput}
+              value={refereeInput}
               onChange={(event) => setFilter('referee', event.target.value.trim())}
+            />
+          </Field>
+          <Field
+            label="Referrer humanity"
+            hint={referrerInputInvalid ? INVALID_ADDRESS_HINT : 'Filter by the referrer\u2019s full address'}
+          >
+            <SearchInput
+              placeholder="0x…"
+              value={referrerInput}
+              onChange={(event) => setFilter('referrer', event.target.value.trim())}
             />
           </Field>
         </div>
@@ -150,7 +164,13 @@ export const ReferralsPage = () => {
         onPageChange={setPage}
         columnHeadings={['', 'Referee', 'Referrer', 'Review', 'Payout', 'Reward', 'Created', '']}
         noRowsMessage="No referrals match"
-        pausedReason={addressInputInvalid ? 'Finish the referee address to search' : undefined}
+        pausedReason={
+          refereeInputInvalid
+            ? 'Finish the referee address to search'
+            : referrerInputInvalid
+              ? 'Finish the referrer address to search'
+              : undefined
+        }
       >
         {referrals.data?.items.map(({ item }) => (
           <Fragment key={item.id}>
