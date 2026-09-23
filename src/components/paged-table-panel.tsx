@@ -13,9 +13,10 @@ const SKELETON_ROWS = 6;
 /**
  * Hover is painted on the cells, not the <tr>, so the ends can round instead of clipping square.
  * A cell spanning the table is a detail row rather than a row you can act on, so it stays untinted.
+ * The end cells are inset on every row, header included, so content never sits against that edge.
  */
 const tableClass =
-  'w-full text-[13px] [&_tbody_tr>td]:transition-colors [&_tbody_tr:hover>td:not([colspan])]:bg-fill [&_tbody_tr:hover>td:first-child]:rounded-l-[10px] [&_tbody_tr:hover>td:last-child]:rounded-r-[10px]';
+  'w-full text-[13px] [&_tr>:first-child]:pl-3 [&_tr>:last-child]:pr-3 [&_tbody_tr>td]:transition-colors [&_tbody_tr:hover>td:not([colspan])]:bg-fill [&_tbody_tr:hover>td:first-child]:rounded-l-[10px] [&_tbody_tr:hover>td:last-child]:rounded-r-[10px]';
 
 /** The envelope every paginated admin query returns: one page of rows, plus how to page past it. */
 type PageOfRows = { count: number; hasNextPage: boolean; items: unknown[] };
@@ -58,11 +59,7 @@ export const PagedTablePanel = ({
           // The headings are a fixed list per table, so position identifies them.
           <th
             key={columnIndex}
-            className={cx(
-              'pb-3 text-[11px] font-semibold tracking-[0.05em] text-fg-faint uppercase',
-              // Every column but the last is padded, so the last one ends flush with the edge.
-              columnIndex < columnHeadings.length - 1 && 'pr-3',
-            )}
+            className="pr-3 pb-3 text-[11px] font-semibold tracking-[0.05em] text-fg-faint uppercase"
           >
             {heading}
           </th>
