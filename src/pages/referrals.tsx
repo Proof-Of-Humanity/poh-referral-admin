@@ -1,13 +1,24 @@
 import { isAddress } from 'viem';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { AddressChip } from '../components/address';
 import { useToast } from '../components/toast';
-import { CheckIcon, ClockIcon, FilterIcon, LinkIcon, ListIcon, LockIcon, XIcon } from '../components/icons';
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ClockIcon,
+  FilterIcon,
+  LinkIcon,
+  ListIcon,
+  LockIcon,
+  XIcon,
+} from '../components/icons';
 import { Badge } from '../components/badge';
 import { Button } from '../components/button';
+import { cx } from '../components/cx';
 import { ErrorState } from '../components/error-state';
 import { Field } from '../components/field';
 import { Modal } from '../components/modal';
@@ -34,6 +45,7 @@ import {
   reviewStatusOptions,
   type StatusDisplay,
 } from '../lib/status';
+import { ReferralDrawerRow } from './referral-drawer';
 
 const PAGE_SIZE = 20;
 
@@ -47,6 +59,7 @@ export const ReferralsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [page, setPage] = useState(0);
   const [referralUnderReview, setReferralUnderReview] = useState<Referral | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const reviewStatus = enumFromSearchParam(searchParams.get('reviewStatus'), reviewStatusOptions);
   const payoutStatus = enumFromSearchParam(searchParams.get('payout'), payoutFilterOptions);
@@ -135,12 +148,20 @@ export const ReferralsPage = () => {
         pageIndex={page}
         rowsPerPage={PAGE_SIZE}
         onPageChange={setPage}
-        columnHeadings={['Referee', 'Referrer', 'Review', 'Payout', 'Reward', 'Created', '']}
+        columnHeadings={['', 'Referee', 'Referrer', 'Review', 'Payout', 'Reward', 'Created', '']}
         noRowsMessage="No referrals match"
         pausedReason={addressInputInvalid ? 'Finish the referee address to search' : undefined}
       >
         {referrals.data?.items.map(({ item }) => (
-          <ReferralRow key={item.id} referral={item} onReview={setReferralUnderReview} />
+          <Fragment key={item.id}>
+            <ReferralRow
+              referral={item}
+              onReview={setReferralUnderReview}
+              expanded={expandedId === item.refereeHumanityId}
+              onToggle={() => setExpandedId(expandedId === item.refereeHumanityId ? null : item.refereeHumanityId)}
+            />
+            {expandedId === item.refereeHumanityId && <ReferralDrawerRow referral={item} />}
+          </Fragment>
         ))}
       </PagedTablePanel>
 
@@ -151,14 +172,38 @@ export const ReferralsPage = () => {
   );
 };
 
-const ReferralRow = ({ referral, onReview }: { referral: Referral; onReview: (referral: Referral) => void }) => {
+const ReferralRow = ({
+  referral,
+  onReview,
+  expanded,
+  onToggle,
+}: {
+  referral: Referral;
+  onReview: (referral: Referral) => void;
+  expanded: boolean;
+  onToggle: () => void;
+}) => {
   const payout = referral.payoutTransaction;
   const reviewDisplay = reviewStatusDisplay[referral.reviewStatus] ?? unknownStatusDisplay(referral.reviewStatus);
   const payoutDisplay = payout
     ? (payoutStateDisplay[ReferralPayoutFilter[payout.status]] ?? unknownStatusDisplay(payout.status))
     : payoutStateDisplay.Unassigned;
   return (
-    <tr className="border-b border-line/60 align-top hover:bg-accent/5">
+    // An open row hands its bottom border to the drawer row below it, which keeps the drawer attached to
+    // its own row and preserves the last:border-b-0 look the inserted drawer would otherwise defeat.
+    <tr className={cx('align-top', !expanded && 'border-b border-line/60 last:border-b-0')}>
+      <td className="py-3 pr-1">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={expanded}
+          aria-label={expanded ? 'Hide on-chain detail' : 'Show on-chain detail'}
+          // Grows into the row, never past the table's left edge: the scroll container clips anything there.
+          className="-my-1 -mr-1 rounded-md p-1 text-fg-faint transition-colors hover:bg-fill hover:text-accent"
+        >
+          {expanded ? <ChevronDownIcon className="size-3.5" /> : <ChevronRightIcon className="size-3.5" />}
+        </button>
+      </td>
       <td className="py-3 pr-3">
         <AddressChip address={referral.refereeHumanityId} />
         {referral.refereeFlag?.isFlagged && (

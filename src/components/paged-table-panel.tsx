@@ -10,6 +10,13 @@ import { Panel } from './panel';
 /** Enough placeholder rows to fill the panel without pretending to know how many are coming. */
 const SKELETON_ROWS = 6;
 
+/**
+ * Hover is painted on the cells, not the <tr>, so the ends can round instead of clipping square.
+ * A cell spanning the table is a detail row rather than a row you can act on, so it stays untinted.
+ */
+const tableClass =
+  'w-full text-[13px] [&_tbody_tr>td]:transition-colors [&_tbody_tr:hover>td:not([colspan])]:bg-fill [&_tbody_tr:hover>td:first-child]:rounded-l-[10px] [&_tbody_tr:hover>td:last-child]:rounded-r-[10px]';
+
 /** The envelope every paginated admin query returns: one page of rows, plus how to page past it. */
 type PageOfRows = { count: number; hasNextPage: boolean; items: unknown[] };
 
@@ -72,19 +79,26 @@ export const PagedTablePanel = ({
         <>
           {pageQuery.isPending && (
             <div className="overflow-x-auto" aria-busy="true" aria-label="Loading rows">
-              <table className="w-full text-[13px]">
+              <table className={tableClass}>
                 {headerRow}
                 <tbody>
                   {Array.from({ length: SKELETON_ROWS }, (_, row) => (
                     <tr key={row} className="border-b border-line/60">
                       {columnHeadings.map((heading, columnIndex) => (
-                        <td key={columnIndex} className="py-3 pr-3">
+                        <td
+                          key={columnIndex}
+                          className={cx('py-3', columnIndex === 0 && heading === '' ? 'pr-1' : 'pr-3')}
+                        >
                           {/* Staggered so the sweep reads as one surface rather than six separate ones.
-                              A blank heading is the actions column, so that placeholder is button-shaped. */}
-                          {heading === '' ? (
-                            <Skeleton className="ml-auto h-6 w-16" delayMs={row * 90} />
-                          ) : (
+                              A blank heading first is an icon-button column and a blank heading last is
+                              the actions column; each placeholder matches the box its column will render,
+                              or the column snaps sideways when the rows land. */}
+                          {heading !== '' ? (
                             <Skeleton className="h-3.5 w-full max-w-36" delayMs={row * 90} />
+                          ) : columnIndex === 0 ? (
+                            <Skeleton className="size-[22px]" delayMs={row * 90} />
+                          ) : (
+                            <Skeleton className="ml-auto h-6 w-16" delayMs={row * 90} />
                           )}
                         </td>
                       ))}
@@ -102,7 +116,7 @@ export const PagedTablePanel = ({
               className={cx('overflow-x-auto transition-opacity', pageQuery.isFetching && 'opacity-50')}
               aria-busy={pageQuery.isFetching}
             >
-              <table className="w-full text-[13px]">
+              <table className={tableClass}>
                 {headerRow}
                 <tbody>{children}</tbody>
               </table>

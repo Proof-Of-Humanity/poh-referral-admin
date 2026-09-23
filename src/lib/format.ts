@@ -2,7 +2,7 @@ import { formatUnits } from 'viem';
 
 export const shortAddress = (address: string) => `${address.slice(0, 6)}…${address.slice(-4)}`;
 
-export const formatPnk = (wei: string) => {
+export const formatPnk = (wei: string | bigint) => {
   const value = Number(formatUnits(BigInt(wei), 18));
   return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} PNK`;
 };

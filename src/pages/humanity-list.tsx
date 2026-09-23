@@ -79,7 +79,7 @@ export const HumanityListPage = (config: HumanityListConfig) => {
         noRowsMessage="Nothing here yet"
       >
         {list.data?.items.map(({ item }) => (
-          <tr key={item.humanityId} className="border-b border-line/60 align-top hover:bg-accent/5">
+          <tr key={item.humanityId} className="border-b border-line/60 align-top last:border-b-0">
             <td className="py-3 pr-3">
               <span className="flex items-center gap-1.5">
                 <PersonIcon className="size-3.5 shrink-0 text-fg-faint" />

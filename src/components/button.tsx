@@ -6,7 +6,8 @@ type ButtonVariant = 'primary' | 'ghost' | 'danger';
 
 const buttonVariants: Record<ButtonVariant, string> = {
   primary: 'bg-accent text-black/85 hover:bg-accent-strong',
-  ghost: 'bg-fill-strong text-fg shadow-[inset_0_1px_0_rgba(255,255,255,0.09)] hover:bg-fill-strong/70',
+  // Hover also answers with accent, because inside a table row the row's own tint cancels the fill change out.
+  ghost: 'bg-fill-strong text-fg shadow-[inset_0_1px_0_rgba(255,255,255,0.09)] hover:bg-fill-strong/70 hover:text-accent',
   danger: 'bg-danger/15 text-danger hover:bg-danger/25',
 };
 
