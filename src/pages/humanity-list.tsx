@@ -37,6 +37,8 @@ type HumanityListConfig = {
   queryKey: string;
   list: (pagination: AdminHumanityPaginationInput) => Promise<HumanityPage>;
   setEnabled: (input: { humanityId: string; enabled: boolean; reason: string }) => Promise<unknown>;
+  /** Shown when the list is empty. */
+  noRowsMessage: string;
 };
 
 export const HumanityListPage = (config: HumanityListConfig) => {
@@ -76,12 +78,12 @@ export const HumanityListPage = (config: HumanityListConfig) => {
         rowsPerPage={PAGE_SIZE}
         onPageChange={setPage}
         columnHeadings={['Humanity', 'State', 'Reason', '']}
-        noRowsMessage="Nothing here yet"
+        noRowsMessage={config.noRowsMessage}
       >
         {list.data?.items.map(({ item }) => (
           <tr key={item.humanityId} className="border-b border-line/60 align-top last:border-b-0">
             <td className="py-3 pr-3">
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-2.5">
                 <PersonIcon className="size-3.5 shrink-0 text-fg-faint" />
                 <AddressChip address={item.humanityId} />
               </span>
@@ -89,13 +91,14 @@ export const HumanityListPage = (config: HumanityListConfig) => {
             <td className="py-3 pr-3">
               <Badge tone={config.enabledTone}>{config.enabledStateLabel}</Badge>
             </td>
-            <td className="py-3 pr-3 text-fg-muted">
-              <div className="max-w-md truncate" title={item.reason}>
+            <td className="w-full max-w-0 pt-3.5 pr-3 pb-3 text-fg-muted">
+              <div className="truncate" title={item.reason}>
                 {item.reason}
               </div>
             </td>
             <td className="py-3 text-right">
               <Button
+                className="-my-1"
                 variant="danger"
                 onClick={() => setStateChange({ humanityId: item.humanityId, targetEnabled: false })}
               >
@@ -148,6 +151,7 @@ const HumanityStateModal = ({
           <Input
             value={humanityId}
             onChange={(event) => setHumanityId(event.target.value.trim())}
+            className="font-mono"
             placeholder="0x…"
             disabled={Boolean(change.humanityId)}
           />
@@ -158,7 +162,6 @@ const HumanityStateModal = ({
         {save.error && <ErrorState error={save.error} />}
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} disabled={save.isPending}>
-            <XIcon className="size-3.5" />
             Cancel
           </Button>
           <Button

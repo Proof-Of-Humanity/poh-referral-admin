@@ -45,10 +45,10 @@ const Rule = ({ children }: { children: ReactNode }) => (
 
 const Row = ({ tone, label, children }: { tone: Tone; label: string; children: ReactNode }) => (
   <div className="grid grid-cols-[7.5rem_1fr] gap-3">
-    <dt>
+    <dt className="flex items-start">
       <Badge tone={tone}>{label}</Badge>
     </dt>
-    <dd className="text-sm">{children}</dd>
+    <dd>{children}</dd>
   </div>
 );
 
@@ -258,7 +258,7 @@ export const Tutorial = ({ onClose }: { onClose: () => void }) => {
         </div>
         <h4 className="text-[15px] font-semibold">{step.title}</h4>
       </div>
-      <div className="mt-3 min-h-[17rem] text-sm leading-relaxed text-fg">{step.body}</div>
+      <div className="mt-3 min-h-[29rem] text-sm leading-relaxed text-fg">{step.body}</div>
       <div className="mt-5 flex items-center justify-between gap-3 border-t border-line pt-4">
         <div className="flex gap-1.5" aria-hidden>
           {steps.map((_, dot) => (
@@ -270,7 +270,7 @@ export const Tutorial = ({ onClose }: { onClose: () => void }) => {
             <Link
               to={step.link.to}
               onClick={finish}
-              className="flex items-center gap-1 text-xs text-fg-muted hover:text-accent"
+              className="flex items-center gap-1 text-xs text-fg-muted transition-colors hover:text-accent"
             >
               {step.link.label}
               <ArrowRightIcon className="size-3.5" />

@@ -20,8 +20,8 @@ export const Button = ({
     type="button"
     {...props}
     className={cx(
-      'inline-flex items-center justify-center gap-1.5 rounded-[10px] px-3 py-1.5 text-[13px] font-medium whitespace-nowrap [&>svg]:shrink-0',
-      'transition-all active:scale-[0.98] disabled:pointer-events-none disabled:opacity-35',
+      'inline-flex items-center justify-center gap-1.5 rounded-[10px] px-3 py-1.5 text-[13px]/5 font-medium whitespace-nowrap [&>svg]:shrink-0',
+      'transition-all active:scale-[0.98] disabled:pointer-events-none disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info/70',
       buttonVariants[variant],
       className,
     )}

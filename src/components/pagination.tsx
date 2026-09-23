@@ -17,7 +17,7 @@ export const Pagination = ({
   const from = count === 0 ? 0 : page * pageSize + 1;
   const to = Math.min((page + 1) * pageSize, count);
   return (
-    <div className="flex items-center justify-between border-t border-line pt-3 text-[12px] text-fg-muted">
+    <div className="flex items-center justify-between border-t border-line px-3 pt-3 text-[12px] text-fg-muted">
       <span className="shrink-0 font-mono whitespace-nowrap">
         {from}–{to} of {count}
       </span>

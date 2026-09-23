@@ -24,7 +24,7 @@ export const AddressChip = ({ address }: { address: string }) => {
       type="button"
       onClick={copy}
       title={address}
-      className="group -mx-1.5 inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 font-mono text-[12.5px] text-fg transition-colors hover:bg-fill hover:text-accent focus-visible:bg-fill focus-visible:text-accent"
+      className="group -mx-1.5 inline-flex whitespace-nowrap items-center gap-1.5 rounded-md px-1.5 py-0.5 font-mono text-[12.5px] text-fg transition-colors hover:bg-fill hover:text-accent focus-visible:bg-fill focus-visible:text-accent"
     >
       {shortAddress(address)}
       {copied ? (

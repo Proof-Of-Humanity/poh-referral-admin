@@ -38,13 +38,13 @@ export const LoginPage = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-[20px] border border-line bg-surface/80 p-8 shadow-[0_24px_60px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-        <div className="grid size-11 place-items-center rounded-[13px] bg-accent text-black/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
+      <div className="w-full max-w-md rounded-[18px] border border-line bg-surface/80 p-8 shadow-[0_24px_60px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+        <div className="grid size-11 place-items-center rounded-xl bg-accent text-black/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
           <ShieldIcon className="size-6" />
         </div>
         <div className="mt-5 text-[12px] font-medium text-fg-muted">Proof of Humanity</div>
         <h1 className="mt-1 text-[26px] font-bold">Referral Admin</h1>
-        <p className="mt-2 text-[13px] text-fg-muted">
+        <p className="mt-2 text-[13px] text-pretty text-fg-muted">
           Sign in with an admin wallet to review referrals, flags and payout caps.
         </p>
 

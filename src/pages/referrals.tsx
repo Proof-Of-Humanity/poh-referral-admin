@@ -7,14 +7,12 @@ import { AddressChip } from '../components/address';
 import { useToast } from '../components/toast';
 import {
   CheckIcon,
-  ChevronDownIcon,
   ChevronRightIcon,
   ClockIcon,
   FilterIcon,
   LinkIcon,
   ListIcon,
   LockIcon,
-  XIcon,
 } from '../components/icons';
 import { Badge } from '../components/badge';
 import { Button } from '../components/button';
@@ -219,9 +217,12 @@ const ReferralRow = ({
           aria-expanded={expanded}
           aria-label={expanded ? 'Hide on-chain detail' : 'Show on-chain detail'}
           // Grows into the row, never past the table's left edge: the scroll container clips anything there.
-          className="-my-1 -mr-1 rounded-md p-1 text-fg-faint transition-colors hover:bg-fill hover:text-accent"
+          className={cx(
+            '-mr-1 rounded-md p-1 transition-colors hover:bg-fill hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info/70',
+            expanded ? 'text-fg-muted' : 'text-fg-faint',
+          )}
         >
-          {expanded ? <ChevronDownIcon className="size-3.5" /> : <ChevronRightIcon className="size-3.5" />}
+          <ChevronRightIcon className={cx('size-3.5 transition-transform', expanded && 'rotate-90')} />
         </button>
       </td>
       <td className="py-3 pr-3">
@@ -257,8 +258,8 @@ const ReferralRow = ({
           </div>
         )}
       </td>
-      <td className="py-3 pr-3 font-mono whitespace-nowrap text-fg">{formatPnk(referral.rewardAmount)}</td>
-      <td className="py-3 pr-3 whitespace-nowrap text-fg-muted" title={formatDateTime(referral.createdAt)}>
+      <td className="pt-3.5 pr-3 pb-3 font-mono whitespace-nowrap text-fg">{formatPnk(referral.rewardAmount)}</td>
+      <td className="pt-3.5 pr-3 pb-3 whitespace-nowrap text-fg-muted" title={formatDateTime(referral.createdAt)}>
         <span className="flex items-center gap-1.5">
           <ClockIcon className="size-3.5 shrink-0 text-fg-faint" />
           {formatRelative(referral.createdAt)}
@@ -266,6 +267,7 @@ const ReferralRow = ({
       </td>
       <td className="py-3 text-right">
         <Button
+          className="-my-1"
           onClick={() => onReview(referral)}
           disabled={Boolean(payout)}
           title={payout ? 'Locked: a payout is already assigned' : undefined}
@@ -308,13 +310,13 @@ const ReviewModal = ({ referral, onClose }: { referral: Referral; onClose: () =>
   return (
     // Locked once something is typed, so a stray click on the backdrop cannot bin the reason.
     <Modal title="Update review status" onClose={onClose} locked={update.isPending || reason.trim() !== ''}>
-      <div className="mb-4 grid grid-cols-2 gap-3 font-mono text-xs">
-        <div>
-          <div className="text-fg-faint">Referee</div>
+      <div className="mb-4 grid grid-cols-2 gap-3">
+        <div className="flex flex-col items-start gap-1.5">
+          <span className="text-[11px] font-medium text-fg-muted">Referee</span>
           <AddressChip address={referral.refereeHumanityId} />
         </div>
-        <div>
-          <div className="text-fg-faint">Referrer</div>
+        <div className="flex flex-col items-start gap-1.5">
+          <span className="text-[11px] font-medium text-fg-muted">Referrer</span>
           <AddressChip address={referral.referrerHumanityId} />
         </div>
       </div>
@@ -345,7 +347,6 @@ const ReviewModal = ({ referral, onClose }: { referral: Referral; onClose: () =>
         {update.error && <ErrorState error={update.error} />}
         <div className="flex justify-end gap-2">
           <Button onClick={onClose} disabled={update.isPending}>
-            <XIcon className="size-3.5" />
             Cancel
           </Button>
           <Button

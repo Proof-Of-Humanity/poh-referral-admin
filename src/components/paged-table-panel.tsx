@@ -13,10 +13,11 @@ const SKELETON_ROWS = 6;
 /**
  * Hover is painted on the cells, not the <tr>, so the ends can round instead of clipping square.
  * A cell spanning the table is a detail row rather than a row you can act on, so it stays untinted.
- * The end cells are inset on every row, header included, so content never sits against that edge.
+ * The end cells are inset on every row, header included, so content never sits against that edge,
+ * except a spanning detail cell, so its card lines up with the hover pill of the rows around it.
  */
 const tableClass =
-  'w-full text-[13px] [&_tr>:first-child]:pl-3 [&_tr>:last-child]:pr-3 [&_tbody_tr>td]:transition-colors [&_tbody_tr:hover>td:not([colspan])]:bg-fill [&_tbody_tr:hover>td:first-child]:rounded-l-[10px] [&_tbody_tr:hover>td:last-child]:rounded-r-[10px]';
+  'w-full text-[13px] [&_tr>:first-child:not([colspan])]:pl-3 [&_tr>:last-child:not([colspan])]:pr-3 [&_tbody_tr>td]:transition-colors [&_tbody_tr:hover>td:not([colspan])]:bg-fill [&_tbody_tr:hover>td:first-child]:rounded-l-[10px] [&_tbody_tr:hover>td:last-child]:rounded-r-[10px]';
 
 /** The envelope every paginated admin query returns: one page of rows, plus how to page past it. */
 type PageOfRows = { count: number; hasNextPage: boolean; items: unknown[] };
@@ -36,7 +37,13 @@ export const PagedTablePanel = ({
   pausedReason,
   children,
 }: {
-  pageQuery: { isPending: boolean; isFetching: boolean; error: unknown; data: PageOfRows | undefined };
+  pageQuery: {
+    isPending: boolean;
+    isFetching: boolean;
+    isPlaceholderData: boolean;
+    error: unknown;
+    data: PageOfRows | undefined;
+  };
   /** Zero-based, matching the `skip` the API pages with. */
   pageIndex: number;
   rowsPerPage: number;
@@ -51,6 +58,7 @@ export const PagedTablePanel = ({
 }) => {
   const rows = pageQuery.data;
   const hasRows = rows !== undefined && rows.items.length > 0;
+  const stale = pageQuery.isFetching || pageQuery.isPlaceholderData;
 
   const headerRow = (
     <thead>
@@ -73,7 +81,7 @@ export const PagedTablePanel = ({
       {pausedReason ? (
         <EmptyState>{pausedReason}</EmptyState>
       ) : (
-        <>
+        <div className="space-y-4">
           {pageQuery.isPending && (
             <div className="overflow-x-auto" aria-busy="true" aria-label="Loading rows">
               <table className={tableClass}>
@@ -110,8 +118,8 @@ export const PagedTablePanel = ({
           {hasRows && (
             // Fading the old page is enough to say "loading"; replacing it with placeholders is not.
             <div
-              className={cx('overflow-x-auto transition-opacity', pageQuery.isFetching && 'opacity-50')}
-              aria-busy={pageQuery.isFetching}
+              className={cx('overflow-x-auto transition-opacity', stale && 'opacity-50')}
+              aria-busy={stale}
             >
               <table className={tableClass}>
                 {headerRow}
@@ -120,17 +128,15 @@ export const PagedTablePanel = ({
             </div>
           )}
           {hasRows && (
-            <div className="mt-4">
-              <Pagination
-                page={pageIndex}
-                pageSize={rowsPerPage}
-                count={rows.count}
-                hasNextPage={rows.hasNextPage}
-                onPage={onPageChange}
-              />
-            </div>
+            <Pagination
+              page={pageIndex}
+              pageSize={rowsPerPage}
+              count={rows.count}
+              hasNextPage={rows.hasNextPage}
+              onPage={onPageChange}
+            />
           )}
-        </>
+        </div>
       )}
     </Panel>
   );

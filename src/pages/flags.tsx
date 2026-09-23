@@ -12,6 +12,7 @@ export const FlagsPage = () => (
     enableActionLabel="Flag humanity"
     disableActionLabel="Unflag humanity"
     enabledTone="danger"
+    noRowsMessage="No flagged humanities"
     queryKey="flagged"
     list={(pagination) => api.FlaggedHumanities({ pagination }).then((data) => data.adminPohFlaggedHumanities)}
     setEnabled={({ humanityId, enabled, reason }) => api.SetHumanityFlag({ humanityId, isFlagged: enabled, reason })}

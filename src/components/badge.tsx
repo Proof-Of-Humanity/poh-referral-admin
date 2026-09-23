@@ -7,7 +7,7 @@ const badgeTones: Record<Tone, string> = {
   accent: 'bg-accent/15 text-accent',
   success: 'bg-success/15 text-success',
   danger: 'bg-danger/15 text-danger',
-  info: 'bg-info/16 text-info',
+  info: 'bg-info/15 text-info',
   muted: 'bg-fill text-fg-muted',
 };
 

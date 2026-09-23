@@ -12,6 +12,7 @@ export const WhitelistPage = () => (
     enableActionLabel="Whitelist humanity"
     disableActionLabel="Remove from whitelist"
     enabledTone="info"
+    noRowsMessage="No whitelisted humanities"
     queryKey="whitelisted"
     list={(pagination) => api.WhitelistedHumanities({ pagination }).then((data) => data.adminPohWhitelistedHumanities)}
     setEnabled={({ humanityId, enabled, reason }) =>

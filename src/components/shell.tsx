@@ -26,7 +26,7 @@ export const Shell = () => {
 
   return (
     <div className="grid h-screen grid-cols-[232px_minmax(0,1fr)] grid-rows-[52px_minmax(0,1fr)]">
-      <header className="col-span-2 flex items-center gap-3 border-b border-line bg-material pr-7 pl-5 backdrop-blur-2xl">
+      <header className="col-span-2 flex items-center gap-3 border-b border-line bg-material pr-7 pl-5">
         <div className="flex items-center gap-2">
           <div className="grid size-[22px] shrink-0 place-items-center rounded-[6px] bg-accent text-black/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
             <ShieldIcon className="size-3.5" />

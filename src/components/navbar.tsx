@@ -39,8 +39,8 @@ export const Navbar = ({ onOpenTutorial }: { onOpenTutorial: () => void }) => (
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 rounded-[7px] px-2.5 py-1.5 text-[13px] font-medium transition-colors ${
-                isActive ? 'bg-white/10 text-fg' : 'text-fg-muted hover:bg-white/5 hover:text-fg'
+              `flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-[13px]/5 font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info/70 ${
+                isActive ? 'bg-fill text-fg' : 'text-fg-muted hover:bg-fill/60 hover:text-fg'
               }`
             }
           >
@@ -53,7 +53,7 @@ export const Navbar = ({ onOpenTutorial }: { onOpenTutorial: () => void }) => (
     <button
       type="button"
       onClick={onOpenTutorial}
-      className="mt-auto flex items-center gap-2.5 rounded-[7px] px-2.5 py-1.5 text-left text-[13px] font-medium text-fg-muted transition-colors hover:bg-white/5 hover:text-fg"
+      className="mt-auto flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left text-[13px]/5 font-medium text-fg-muted transition-colors hover:bg-fill/60 hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info/70"
     >
       <BookIcon className="size-4 shrink-0 opacity-85" />
       How it works

@@ -22,19 +22,19 @@ export const ReferralDrawerRow = ({ referral }: { referral: Referral }) => {
 
   return (
     <tr className="border-b border-line/60 last:border-b-0">
-      <td colSpan={8} className="p-0 pb-3">
-        <div className="rounded-2xl border border-line bg-surface px-4 py-4">
+      <td colSpan={8} className="pt-2 pb-3">
+        <div className="rounded-2xl border border-line bg-surface p-4">
           {profiles.isPending ? (
             // Sized to the settled panels, so the drawer opens at its final height instead of
             // shoving every row below it down when the profiles land.
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               <Skeleton className="h-80 rounded-xl" />
               <Skeleton className="h-80 rounded-xl" delayMs={90} />
             </div>
           ) : profiles.error ? (
             <ErrorState error={profiles.error} />
           ) : (
-            <div className="grid items-start gap-4 md:grid-cols-2">
+            <div className="grid gap-4 lg:grid-cols-2">
               <PartyPanel
                 role="Referee"
                 humanityId={referral.refereeHumanityId}
@@ -53,6 +53,13 @@ export const ReferralDrawerRow = ({ referral }: { referral: Referral }) => {
   );
 };
 
+const initials = (name: string) => {
+  const words = name.trim().split(/\s+/);
+  const first = words[0]?.[0] ?? '';
+  const last = words.length > 1 ? (words.at(-1)?.[0] ?? '') : '';
+  return (first + last).toUpperCase();
+};
+
 const PartyPanel = ({
   role,
   humanityId,
@@ -62,17 +69,17 @@ const PartyPanel = ({
   humanityId: string;
   profile: HumanityProfile | undefined;
 }) => (
-  <div className="rounded-xl border border-line bg-surface/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+  <div className="min-h-80 rounded-xl border border-line bg-surface/80 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
     <div className="flex items-center gap-2.5">
       <span className="grid size-8 place-items-center rounded-full bg-fill text-[11.5px] font-medium text-fg-muted">
-        {profile?.name ? profile.name.slice(0, 2).toUpperCase() : <PersonIcon className="size-4 text-fg-faint" />}
+        {profile?.name ? initials(profile.name) : <PersonIcon className="size-4 text-fg-faint" />}
       </span>
       <div className="min-w-0">
         <div className="truncate text-[13px] text-fg" title={profile?.name ?? undefined}>
-          {profile?.name ?? shortAddress(humanityId)}
+          {profile?.name ?? role}
         </div>
-        <div className="text-[11.5px] text-fg-faint" title={humanityId}>
-          {role} · humanity {shortAddress(humanityId)}
+        <div className="text-xs text-fg-faint" title={humanityId}>
+          {profile?.name ? `${role} · ` : ''}humanity {shortAddress(humanityId)}
         </div>
       </div>
     </div>
@@ -101,7 +108,7 @@ const PartyPanel = ({
           {profile.claimerAddress ? (
             <AddressChip address={profile.claimerAddress} />
           ) : (
-            <span className="text-fg-muted">no current owner</span>
+            <span className="inline-flex py-0.5 text-[12.5px] text-fg-muted">no current owner</span>
           )}
         </Detail>
         <Detail label="Stake">
@@ -134,7 +141,13 @@ const StakeRow = ({ claimer }: { claimer: string | null }) => {
   });
 
   // Checked before the query state: a disabled query reports 'pending' forever in react-query v5.
-  if (!claimer) return <>—</>;
+  if (!claimer)
+    return (
+      <>
+        —
+        <div className="mt-1.5 h-1 rounded-full bg-fill-strong" />
+      </>
+    );
   if (stake.error) return <span className="text-fg-muted">unavailable</span>;
   if (stake.isPending)
     return (

@@ -33,20 +33,20 @@ export const OverviewPage = () => {
   return (
     <>
       <PageHeader title="Overview" subtitle="Referral pipeline at a glance." />
-      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat label="Referrals" value={referralCounts.total.count} tone="muted" icon={ReferralIcon} />
         <Stat label="Needs review" value={referralCounts.needsReview.count} tone="accent" icon={WarningIcon} />
         <Stat label="Flagged humanities" value={countOrPlaceholder(flagged)} tone="danger" icon={FlagIcon} />
         <Stat label="Cap whitelisted" value={countOrPlaceholder(whitelisted)} tone="info" icon={StarIcon} />
       </div>
-      <div className="mt-5 grid gap-2.5 lg:grid-cols-2">
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Panel
           title="Review status"
           icon={ListIcon}
           actions={
             <Link
               to="/referrals"
-              className="rounded-full bg-fill px-2.5 py-0.5 text-[11.5px] font-medium text-fg-muted transition-colors hover:bg-fill-strong hover:text-fg"
+              className="rounded-full bg-fill px-2.5 py-0.5 text-[11.5px] font-medium text-fg-muted transition-colors hover:bg-fill-strong hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-info/70"
             >
               Open
             </Link>
@@ -87,32 +87,50 @@ const countOrPlaceholder = (query: { error: unknown; data?: number }) => {
 const OverviewSkeleton = () => (
   <>
     <PageHeader title="Overview" subtitle="Referral pipeline at a glance." />
-    <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-      {Array.from({ length: 4 }, (_, card) => (
-        <Panel key={card}>
-          <Skeleton className="h-3 w-20" delayMs={card * 80} />
-          <Skeleton className="mt-2.5 h-6 w-14" delayMs={card * 80} />
-        </Panel>
-      ))}
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <Stat label="Referrals" tone="muted" icon={ReferralIcon} value={<Skeleton className="h-[26px] w-14" />} />
+      <Stat
+        label="Needs review"
+        tone="accent"
+        icon={WarningIcon}
+        value={<Skeleton className="h-[26px] w-14" delayMs={80} />}
+      />
+      <Stat
+        label="Flagged humanities"
+        tone="danger"
+        icon={FlagIcon}
+        value={<Skeleton className="h-[26px] w-14" delayMs={160} />}
+      />
+      <Stat
+        label="Cap whitelisted"
+        tone="info"
+        icon={StarIcon}
+        value={<Skeleton className="h-[26px] w-14" delayMs={240} />}
+      />
     </div>
-    <div className="mt-5 grid gap-2.5 lg:grid-cols-2">
-      {Array.from({ length: 2 }, (_, panel) => (
-        <Panel key={panel}>
-          <ul className="space-y-3">
-            {Array.from({ length: 4 }, (_, row) => (
-              <li key={row}>
-                <div className="flex justify-between">
-                  <Skeleton className="h-3 w-24" delayMs={row * 80} />
-                  <Skeleton className="h-3 w-8" delayMs={row * 80} />
-                </div>
-                <Skeleton className="mt-1.5 h-1 w-full" delayMs={row * 80} />
-              </li>
-            ))}
-          </ul>
-        </Panel>
-      ))}
+    <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <Panel title="Review status" icon={ListIcon}>
+        <BreakdownSkeleton />
+      </Panel>
+      <Panel title="Payout status" icon={CoinIcon}>
+        <BreakdownSkeleton />
+      </Panel>
     </div>
   </>
+);
+
+const BreakdownSkeleton = () => (
+  <ul className="space-y-3">
+    {Array.from({ length: 4 }, (_, row) => (
+      <li key={row}>
+        <div className="flex justify-between">
+          <Skeleton className="h-4 w-24" delayMs={row * 80} />
+          <Skeleton className="h-4 w-8" delayMs={row * 80} />
+        </div>
+        <Skeleton className="mt-1.5 h-1 w-full" delayMs={row * 80} />
+      </li>
+    ))}
+  </ul>
 );
 
 const barColors: Record<Tone, string> = {
@@ -127,9 +145,9 @@ const Breakdown = ({ rows, total }: { rows: [label: string, value: number, tone:
   <ul className="space-y-3">
     {rows.map(([label, value, tone]) => (
       <li key={label}>
-        <div className="flex justify-between font-mono text-xs">
+        <div className="flex justify-between text-xs">
           <span className="text-fg-muted">{label}</span>
-          <span className="text-fg">{value}</span>
+          <span className="font-mono text-fg">{value}</span>
         </div>
         <div className="mt-1.5 h-1 overflow-hidden rounded-full bg-line">
           <div
