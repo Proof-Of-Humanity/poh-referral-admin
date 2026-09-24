@@ -18,6 +18,7 @@ import {
 } from '../components/icons';
 import { Badge } from '../components/badge';
 import { Button } from '../components/button';
+import { Callout } from '../components/callout';
 import { cx } from '../components/cx';
 import { ErrorState } from '../components/error-state';
 import { Field } from '../components/field';
@@ -28,6 +29,7 @@ import { Panel } from '../components/panel';
 import { SearchInput } from '../components/search-input';
 import { Select } from '../components/select';
 import { Textarea } from '../components/textarea';
+import type { Tone } from '../components/tone';
 import { api, MAX_REASON_LENGTH } from '../graphql/client';
 import {
   PohReferralReviewStatus,
@@ -288,11 +290,24 @@ const reviewStatusEffect: Record<PohReferralReviewStatus, string> = {
   [PohReferralReviewStatus.Rejected]: 'Never paid. Reversible until a payout is reserved.',
 };
 
+// The two outcomes that move money or refuse it get a box, not a hint line.
+const reviewStatusWarning: Partial<Record<PohReferralReviewStatus, { tone: Tone; text: string }>> = {
+  [PohReferralReviewStatus.Approved]: {
+    tone: 'accent',
+    text: 'Approved pays past the 30-day expiry and over the monthly cap, whitelist or not. Use it to rescue a legitimate referral, not to clear a queue.',
+  },
+  [PohReferralReviewStatus.Rejected]: {
+    tone: 'danger',
+    text: 'Rejected is never paid. You can undo it until the payout bot reserves the referral, after which no status change is accepted.',
+  },
+};
+
 const ReviewModal = ({ referral, onClose }: { referral: Referral; onClose: () => void }) => {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [reviewStatus, setReviewStatus] = useState(referral.reviewStatus);
   const [reason, setReason] = useState('');
+  const warning = reviewStatusWarning[reviewStatus];
 
   const update = useMutation({
     mutationFn: () => api.UpdateReviewStatus({ refereeHumanityId: referral.refereeHumanityId, reviewStatus, reason }),
@@ -319,7 +334,8 @@ const ReviewModal = ({ referral, onClose }: { referral: Referral; onClose: () =>
         </div>
       </div>
       <div className="space-y-4">
-        <Field label="Status" hint={reviewStatusEffect[reviewStatus]}>
+        {/* The boxed warning says everything the hint would, so only one of them shows. */}
+        <Field label="Status" hint={warning ? undefined : reviewStatusEffect[reviewStatus]}>
           <Select
             value={reviewStatus}
             onChange={(event) => setReviewStatus(event.target.value as PohReferralReviewStatus)}
@@ -331,6 +347,7 @@ const ReviewModal = ({ referral, onClose }: { referral: Referral; onClose: () =>
             ))}
           </Select>
         </Field>
+        {warning && <Callout tone={warning.tone}>{warning.text}</Callout>}
         <Field
           label="Reason"
           hint="Required. Replaces the current note — there is no history, and the payout bot can overwrite it."

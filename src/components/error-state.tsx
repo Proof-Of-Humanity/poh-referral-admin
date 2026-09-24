@@ -1,15 +1,13 @@
 import { ClientError } from 'graphql-request';
 
-import { WarningIcon } from './icons';
+import { Callout } from './callout';
 
 const errorMessage = (error: unknown): string => {
-  if (error instanceof ClientError) return error.response.errors?.[0]?.message ?? error.message;
+  // Without a GraphQL error to quote, the client's own message is the whole request and response
+  // serialised (a gateway's HTML error page included), so only the status is worth showing.
+  if (error instanceof ClientError)
+    return error.response.errors?.[0]?.message ?? `The request failed (HTTP ${error.response.status})`;
   return error instanceof Error ? error.message : 'Something went wrong';
 };
 
-export const ErrorState = ({ error }: { error: unknown }) => (
-  <div className="flex items-start gap-2 rounded-[10px] border border-danger/35 bg-danger/10 px-4 py-3 text-[13px] text-danger">
-    <WarningIcon className="mt-0.5 size-3.5 shrink-0" />
-    {errorMessage(error)}
-  </div>
-);
+export const ErrorState = ({ error }: { error: unknown }) => <Callout tone="danger">{errorMessage(error)}</Callout>;

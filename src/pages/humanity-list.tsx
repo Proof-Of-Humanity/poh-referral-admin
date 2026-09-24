@@ -7,6 +7,7 @@ import { useToast } from '../components/toast';
 import { CheckIcon, PersonIcon, PlusIcon, XIcon } from '../components/icons';
 import { Badge } from '../components/badge';
 import { Button } from '../components/button';
+import { Callout } from '../components/callout';
 import { ErrorState } from '../components/error-state';
 import { Field } from '../components/field';
 import { Input } from '../components/input';
@@ -30,6 +31,9 @@ type HumanityListConfig = {
   /** What the change actually does, shown in the modal before it is made. */
   enableEffect: string;
   disableEffect: string;
+  /** The one consequence that must not be skimmed, boxed above the form; the effect adds only what it leaves out. */
+  enableWarning: string;
+  disableWarning: string;
   enabledStateLabel: string;
   enableActionLabel: string;
   disableActionLabel: string;
@@ -126,6 +130,7 @@ const HumanityStateModal = ({
   const [reason, setReason] = useState('');
   const actionLabel = change.targetEnabled ? config.enableActionLabel : config.disableActionLabel;
   const effect = change.targetEnabled ? config.enableEffect : config.disableEffect;
+  const warning = change.targetEnabled ? config.enableWarning : config.disableWarning;
   const addressInvalid = humanityId !== '' && !isAddress(humanityId);
 
   const save = useMutation({
@@ -142,9 +147,16 @@ const HumanityStateModal = ({
   return (
     // Locked once something is typed, so a stray click on the backdrop cannot bin the reason.
     <Modal title={actionLabel} onClose={onClose} locked={save.isPending || reason.trim() !== ''}>
+      <Callout tone={change.targetEnabled ? config.enabledTone : 'accent'} className="mb-3">
+        {warning}
+      </Callout>
       <p className="mb-4 text-[13px] text-fg-muted">{effect}</p>
       <div className="space-y-4">
-        <Field label="Humanity address" hint={addressInvalid ? INVALID_ADDRESS_HINT : undefined}>
+        <Field
+          label="Humanity address"
+          hint={addressInvalid ? INVALID_ADDRESS_HINT : undefined}
+          invalid={addressInvalid}
+        >
           <Input
             value={humanityId}
             onChange={(event) => setHumanityId(event.target.value.trim())}
