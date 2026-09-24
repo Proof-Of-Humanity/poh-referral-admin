@@ -316,6 +316,17 @@ export type ReferralCountsQuery = {
   confirmed: { __typename?: 'AdminReferralPage'; count: number };
 };
 
+export type ReferralActivityCountsQueryVariables = Exact<{
+  todayFrom: Scalars['DateTime']['input'];
+  monthFrom: Scalars['DateTime']['input'];
+}>;
+
+export type ReferralActivityCountsQuery = {
+  __typename?: 'Query';
+  today: { __typename?: 'AdminReferralPage'; count: number };
+  thisMonth: { __typename?: 'AdminReferralPage'; count: number };
+};
+
 export type UpdateReviewStatusMutationVariables = Exact<{
   refereeHumanityId: Scalars['Address']['input'];
   reviewStatus: PohReferralReviewStatus;
@@ -445,6 +456,16 @@ export const ReferralCountsDocument = gql`
       count
     }
     confirmed: adminPohReferrals(pagination: { take: 1 }, filter: { payoutStatus: [Confirmed] }) {
+      count
+    }
+  }
+`;
+export const ReferralActivityCountsDocument = gql`
+  query ReferralActivityCounts($todayFrom: DateTime!, $monthFrom: DateTime!) {
+    today: adminPohReferrals(pagination: { take: 1 }, filter: { createdAtFrom: $todayFrom }) {
+      count
+    }
+    thisMonth: adminPohReferrals(pagination: { take: 1 }, filter: { createdAtFrom: $monthFrom }) {
       count
     }
   }
@@ -612,6 +633,24 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
             signal,
           }),
         'ReferralCounts',
+        'query',
+        variables,
+      );
+    },
+    ReferralActivityCounts(
+      variables: ReferralActivityCountsQueryVariables,
+      requestHeaders?: GraphQLClientRequestHeaders,
+      signal?: RequestInit['signal'],
+    ): Promise<ReferralActivityCountsQuery> {
+      return withWrapper(
+        (wrappedRequestHeaders) =>
+          client.request<ReferralActivityCountsQuery>({
+            document: ReferralActivityCountsDocument,
+            variables,
+            requestHeaders: { ...requestHeaders, ...wrappedRequestHeaders },
+            signal,
+          }),
+        'ReferralActivityCounts',
         'query',
         variables,
       );

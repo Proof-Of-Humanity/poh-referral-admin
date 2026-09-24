@@ -60,6 +60,15 @@ query ReferralCounts {
   }
 }
 
+query ReferralActivityCounts($todayFrom: DateTime!, $monthFrom: DateTime!) {
+  today: adminPohReferrals(pagination: { take: 1 }, filter: { createdAtFrom: $todayFrom }) {
+    count
+  }
+  thisMonth: adminPohReferrals(pagination: { take: 1 }, filter: { createdAtFrom: $monthFrom }) {
+    count
+  }
+}
+
 mutation UpdateReviewStatus($refereeHumanityId: Address!, $reviewStatus: PohReferralReviewStatus!, $reason: String!) {
   updatePohReferralReviewStatusThroughAdmin(
     refereeHumanityId: $refereeHumanityId
