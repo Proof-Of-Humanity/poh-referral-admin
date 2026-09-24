@@ -64,7 +64,7 @@ export const OverviewPage = () => {
           value={referralCounts.needsReview.count}
           tone="accent"
           icon={WarningIcon}
-          to="/referrals?reviewStatus=NeedsReview"
+          to="/queue"
         />
         <Stat
           label="Flagged humanities"

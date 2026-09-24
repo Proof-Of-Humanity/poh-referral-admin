@@ -25,25 +25,28 @@ export const Shell = () => {
   };
 
   return (
-    <div className="grid h-screen grid-cols-[232px_minmax(0,1fr)] grid-rows-[52px_minmax(0,1fr)]">
-      <header className="col-span-2 flex items-center gap-3 border-b border-line bg-material pr-7 pl-5 backdrop-blur-2xl">
+    <div className="grid h-screen grid-cols-[minmax(0,1fr)] grid-rows-[52px_auto_minmax(0,1fr)] md:grid-cols-[232px_minmax(0,1fr)] md:grid-rows-[52px_minmax(0,1fr)]">
+      {/* A phone fits the environment picker and its Live data warning, or the wordmark and a labelled button, not both. */}
+      <header className="col-span-full flex items-center gap-3 border-b border-line bg-material px-4 backdrop-blur-2xl md:pr-7 md:pl-5">
         <div className="flex items-center gap-2">
           <div className="grid size-[22px] shrink-0 place-items-center rounded-[6px] bg-accent text-black/85 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">
             <ShieldIcon className="size-3.5" />
           </div>
-          <span className="font-display text-[13px] font-semibold">Referral Admin</span>
+          <span className="hidden font-display text-[13px] font-semibold whitespace-nowrap sm:inline">Referral Admin</span>
         </div>
         <ApiEnvironmentSelect className="ml-auto" compact />
-        <span className="font-mono text-[12px] text-fg-muted">{signedInAs ? shortAddress(signedInAs) : '—'}</span>
-        <Button onClick={logout}>
+        <span className="hidden font-mono text-[12px] text-fg-muted sm:inline">
+          {signedInAs ? shortAddress(signedInAs) : '—'}
+        </span>
+        <Button onClick={logout} aria-label="Sign out" title="Sign out">
           <SignOutIcon className="size-3.5" />
-          Sign out
+          <span className="hidden sm:inline">Sign out</span>
         </Button>
       </header>
 
       <Navbar onOpenTutorial={() => setTutorialOpen(true)} />
 
-      <main className="overflow-y-auto px-7 py-6">
+      <main className="min-w-0 overflow-y-auto px-4 py-5 md:px-7 md:py-6">
         <Outlet />
       </main>
       {tutorialOpen && <Tutorial onClose={() => setTutorialOpen(false)} />}

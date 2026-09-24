@@ -144,7 +144,7 @@ const steps: Step[] = [
         </p>
       </>
     ),
-    link: { to: '/referrals?reviewStatus=NeedsReview', label: 'Open the review queue' },
+    link: { to: '/queue', label: 'Open the review queue' },
   },
   {
     title: 'Flags — your verdict on a person',

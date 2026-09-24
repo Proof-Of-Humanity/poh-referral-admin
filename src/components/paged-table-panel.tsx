@@ -15,7 +15,7 @@ const SKELETON_ROWS = 6;
  * A cell spanning the table is a detail row rather than a row you can act on, so it stays untinted.
  * The end cells are inset on every row, header included, so content never sits against that edge.
  */
-const tableClass =
+export const tableClass =
   'w-full text-[13px] [&_tr>:first-child]:pl-3 [&_tr>:last-child]:pr-3 [&_tbody_tr>td]:transition-colors [&_tbody_tr:hover>td:not([colspan])]:bg-fill [&_tbody_tr:hover>td:first-child]:rounded-l-[10px] [&_tbody_tr:hover>td:last-child]:rounded-r-[10px]';
 
 /** The envelope every paginated admin query returns: one page of rows, plus how to page past it. */

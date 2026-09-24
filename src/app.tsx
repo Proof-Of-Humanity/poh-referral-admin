@@ -5,6 +5,7 @@ import { Shell } from './components/shell';
 import { FlagsPage } from './pages/flags';
 import { LoginPage } from './pages/login';
 import { OverviewPage } from './pages/overview';
+import { QueuePage } from './pages/queue';
 import { ReferralsPage } from './pages/referrals';
 import { ReferrerPage } from './pages/referrer';
 import { WhitelistPage } from './pages/whitelist';
@@ -15,6 +16,7 @@ export const App = () => (
     <Route element={<RequireAdmin />}>
       <Route element={<Shell />}>
         <Route index element={<OverviewPage />} />
+        <Route path="queue" element={<QueuePage />} />
         <Route path="referrals" element={<ReferralsPage />} />
         <Route path="referrers/:humanityId" element={<ReferrerPage />} />
         <Route path="flags" element={<FlagsPage />} />
