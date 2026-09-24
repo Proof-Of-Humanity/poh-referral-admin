@@ -110,7 +110,7 @@ export const SubgraphUnavailableNote = ({ humanities }: { humanities: Lookup<unk
 };
 
 /** Why the cap markers are missing when the whitelist could not settle whether they apply. */
-const whitelistUnknownHint = (whitelist: Lookup<HumanityIds>) =>
+export const whitelistUnknownHint = (whitelist: Lookup<HumanityIds>) =>
   whitelist.error
     ? `The whitelist did not load (${errorMessage(whitelist.error)}), so whether the monthly cap applies is unknown.`
     : 'The whitelist was cut off before this humanity, so whether the monthly cap applies is unknown.';
@@ -221,7 +221,7 @@ export const ReferralRow = ({
         </div>
       </td>
       <td className="py-3 pr-3">
-        <AddressChip address={referral.referrerHumanityId} />
+        <AddressChip address={referral.referrerHumanityId} to={`/referrers/${referral.referrerHumanityId}`} />
         {referral.referrerFlag?.isFlagged && (
           <div className="mt-1">
             <Badge tone="danger">Flagged</Badge>

@@ -8,6 +8,8 @@ const clients = pohChains.map((chain) => ({ chain, client: new GraphQLClient(cha
 
 // Sized so one page of referees fits a single request per chain; larger sets are chunked.
 const IDS_PER_QUERY = 100;
+// The subgraph's own page limit. A chunk that fills it may be hiding more.
+const CHALLENGES_PER_QUERY = 1000;
 
 // The claim request deliberately does not select its claimer: a withdrawn or lost claim can belong
 // to a different person than the current registration, so the stake read must only ever follow the
@@ -17,8 +19,11 @@ const IDS_PER_QUERY = 100;
 // the resolution of the latest claim or renewal the requester won. The bot checks more than this
 // before paying (stake, ownership, the claim postdating the referral), so a humanity that reads as
 // eligible here can still be skipped by it.
+//
+// Challenges filed as sybil attack or identity theft are counted per humanity as a duplicate-account
+// signal, whatever their outcome.
 const HUMANITY_PROFILES = `
-  query HumanityProfiles($ids: [Bytes!], $first: Int!) {
+  query HumanityProfiles($ids: [Bytes!], $first: Int!, $challenges: Int!) {
     humanities(where: { id_in: $ids }, first: $first) {
       id
       pendingRevocation
@@ -37,6 +42,12 @@ const HUMANITY_PROFILES = `
         resolutionTime
       }
     }
+    duplicateChallenges: challenges(
+      first: $challenges
+      where: { request_: { humanity_in: $ids }, reason_in: ["sybilAttack", "identityTheft"] }
+    ) {
+      request { humanity { id } }
+    }
   }`;
 
 type SubgraphHumanity = {
@@ -47,7 +58,13 @@ type SubgraphHumanity = {
   latestVerification: { resolutionTime: string }[];
 };
 
-type HumanityProfilesResponse = { humanities: SubgraphHumanity[] };
+type HumanityProfilesResponse = {
+  humanities: SubgraphHumanity[];
+  duplicateChallenges: { request: { humanity: { id: string } } }[];
+};
+
+/** Challenges filed as sybil attack or identity theft. `truncated` means the count is a floor. */
+type DuplicateChallenges = { count: number; truncated: boolean };
 
 export type RegistryStatus =
   | 'verified'
@@ -68,11 +85,16 @@ export type HumanityProfile = {
   verifiedAt: Date | null;
   claimerAddress: string | null;
   name: string | null;
+  /** A duplicate-account signal, not a verdict: the challenges may have failed. */
+  duplicateChallenges: DuplicateChallenges;
 };
+
+/** What one chain says about one humanity. */
+type ChainRecord = { chainLabel: string; humanity: SubgraphHumanity; duplicateChallenges: DuplicateChallenges };
 
 const seconds = (value: string) => new Date(Number(value) * 1000);
 
-const resolveOnChain = (humanity: SubgraphHumanity, chainLabel: string, pendingRevocation: boolean) => {
+const resolveOnChain = ({ humanity, chainLabel, duplicateChallenges }: ChainRecord, pendingRevocation: boolean) => {
   const claim = humanity.latestClaimRequest[0];
   const registration = humanity.registration;
   const expiresAt = registration ? seconds(registration.expirationTime) : null;
@@ -112,6 +134,7 @@ const resolveOnChain = (humanity: SubgraphHumanity, chainLabel: string, pendingR
     verifiedAt: verification ? seconds(verification.resolutionTime) : null,
     claimerAddress: registration?.claimer.id ?? null,
     name: registration?.claimer.name ?? null,
+    duplicateChallenges,
   };
 
   // A transferred-away record is only a proxy for the destination chain, so it must never shadow it.
@@ -126,9 +149,7 @@ const later = (a: Date | null, b: Date | null) => (a && b ? (a > b ? a : b) : (a
  * Folds every chain's record of a humanity into one profile, keyed by lowercased id. Exported so
  * the status rules can be exercised without a subgraph.
  */
-export const mergeHumanityProfiles = (
-  rows: { chainLabel: string; humanity: SubgraphHumanity }[],
-): Map<string, HumanityProfile> => {
+export const mergeHumanityProfiles = (rows: ChainRecord[]): Map<string, HumanityProfile> => {
   const keyed = rows.map((row) => ({ ...row, key: row.humanity.id.toLowerCase() }));
 
   // The payout bot ORs hasPendingRevocation across the chain set, so reading only the winning
@@ -136,8 +157,8 @@ export const mergeHumanityProfiles = (
   const revoking = new Set(keyed.filter(({ humanity }) => humanity.pendingRevocation).map(({ key }) => key));
 
   const merged = new Map<string, { profile: HumanityProfile; liveliness: number }>();
-  for (const { key, chainLabel, humanity } of keyed) {
-    const resolved = resolveOnChain(humanity, chainLabel, revoking.has(key));
+  for (const { key, ...record } of keyed) {
+    const resolved = resolveOnChain(record, revoking.has(key));
     const previous = merged.get(key);
     if (!previous) {
       merged.set(key, resolved);
@@ -150,6 +171,11 @@ export const mergeHumanityProfiles = (
     // The verifying request can sit on the chain the humanity left, and the bot takes the most
     // recent resolution it sees across the set.
     winner.profile.verifiedAt = later(winner.profile.verifiedAt, loser.profile.verifiedAt);
+    // A challenge on the chain the humanity left is still a challenge against the same person.
+    winner.profile.duplicateChallenges = {
+      count: winner.profile.duplicateChallenges.count + loser.profile.duplicateChallenges.count,
+      truncated: winner.profile.duplicateChallenges.truncated || loser.profile.duplicateChallenges.truncated,
+    };
     merged.set(key, winner);
   }
 
@@ -173,7 +199,11 @@ export const fetchHumanityProfiles = async (ids: string[]): Promise<Map<string, 
       clients.map(async ({ chain, client }) => ({
         chain,
         data: await client
-          .request<HumanityProfilesResponse>(HUMANITY_PROFILES, { ids: chunk, first: chunk.length })
+          .request<HumanityProfilesResponse>(HUMANITY_PROFILES, {
+            ids: chunk,
+            first: chunk.length,
+            challenges: CHALLENGES_PER_QUERY,
+          })
           .catch((cause: unknown) => {
             throw new Error(SUBGRAPH_DOWN_HINT, { cause });
           }),
@@ -182,7 +212,19 @@ export const fetchHumanityProfiles = async (ids: string[]): Promise<Map<string, 
   );
 
   return mergeHumanityProfiles(
-    responses.flatMap(({ chain, data }) => data.humanities.map((humanity) => ({ chainLabel: chain.label, humanity }))),
+    responses.flatMap(({ chain, data }) => {
+      const truncated = data.duplicateChallenges.length === CHALLENGES_PER_QUERY;
+      const counts = new Map<string, number>();
+      for (const challenge of data.duplicateChallenges) {
+        const key = challenge.request.humanity.id.toLowerCase();
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+      return data.humanities.map((humanity) => ({
+        chainLabel: chain.label,
+        humanity,
+        duplicateChallenges: { count: counts.get(humanity.id.toLowerCase()) ?? 0, truncated },
+      }));
+    }),
   );
 };
 

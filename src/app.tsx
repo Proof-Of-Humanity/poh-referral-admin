@@ -6,6 +6,7 @@ import { FlagsPage } from './pages/flags';
 import { LoginPage } from './pages/login';
 import { OverviewPage } from './pages/overview';
 import { ReferralsPage } from './pages/referrals';
+import { ReferrerPage } from './pages/referrer';
 import { WhitelistPage } from './pages/whitelist';
 
 export const App = () => (
@@ -15,6 +16,7 @@ export const App = () => (
       <Route element={<Shell />}>
         <Route index element={<OverviewPage />} />
         <Route path="referrals" element={<ReferralsPage />} />
+        <Route path="referrers/:humanityId" element={<ReferrerPage />} />
         <Route path="flags" element={<FlagsPage />} />
         <Route path="whitelist" element={<WhitelistPage />} />
       </Route>

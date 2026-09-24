@@ -260,6 +260,7 @@ export type ReferralFieldsFragment = {
   rewardAmount: string;
   payoutTransaction?: {
     __typename?: 'PohReferralPayoutTransaction';
+    createdAt: string;
     status: PohReferralPayoutTransactionStatus;
     txHash: any;
   } | null;
@@ -291,6 +292,7 @@ export type ReferralsQuery = {
         rewardAmount: string;
         payoutTransaction?: {
           __typename?: 'PohReferralPayoutTransaction';
+          createdAt: string;
           status: PohReferralPayoutTransactionStatus;
           txHash: any;
         } | null;
@@ -348,6 +350,7 @@ export const ReferralFieldsFragmentDoc = gql`
     reviewReason
     rewardAmount
     payoutTransaction {
+      createdAt
       status
       txHash
     }

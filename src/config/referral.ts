@@ -8,6 +8,7 @@ export const REFERRAL_EXPIRY_MS = 30 * 24 * 60 * 60 * 1000;
 
 // Volume thresholds this dashboard flags on its own; the bot has no such rule.
 export const HIGH_VOLUME_MONTH = 20;
+export const HIGH_VELOCITY_DAY = 5;
 
 export const SUBGRAPH_DOWN_HINT = 'PoH status unavailable: the subgraph did not answer.';
 

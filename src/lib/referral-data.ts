@@ -3,9 +3,11 @@ import { useQuery } from '@tanstack/react-query';
 import { api, requestDocument } from '../graphql/client';
 import {
   AdminHumanitySortField,
+  PohReferralSortField,
   SortDirection,
   type AdminHumanityPaginationInput,
   type AdminReferralFilter,
+  type ReferralFieldsFragment as Referral,
 } from '../graphql/generated';
 
 // Atlas caps query complexity at 100 per request, counting one per field. An aliased count costs
@@ -46,6 +48,35 @@ export const countReferrals = async <Alias extends string>(
   return result;
 };
 
+export type ReferralBatch = {
+  items: Referral[];
+  /** True when more rows matched than `limit` allowed; the caller says so wherever it shows totals. */
+  truncated: boolean;
+  count: number;
+};
+
+/** Newest first, page by page, until the filter is exhausted or `limit` rows are in hand. */
+export const fetchReferrals = async (filter: AdminReferralFilter, limit: number): Promise<ReferralBatch> => {
+  const items: Referral[] = [];
+  let count = 0;
+  let hasNextPage = true;
+  while (hasNextPage && items.length < limit) {
+    const page = await api.Referrals({
+      pagination: {
+        skip: items.length,
+        take: Math.min(MAX_TAKE, limit - items.length),
+        orderBy: PohReferralSortField.CreatedAt,
+        orderDirection: SortDirection.Desc,
+      },
+      filter,
+    });
+    items.push(...page.adminPohReferrals.items.map(({ item }) => item));
+    count = page.adminPohReferrals.count;
+    hasNextPage = page.adminPohReferrals.hasNextPage;
+  }
+  return { items, truncated: hasNextPage, count };
+};
+
 export type HumanityIds = { ids: Set<string>; truncated: boolean };
 
 type HumanityPage = { hasNextPage: boolean; items: { item: { humanityId: string } }[] };
@@ -76,6 +107,12 @@ export const fetchWhitelistedIds = (limit: number) =>
     limit,
   );
 
+export const fetchFlaggedIds = (limit: number) =>
+  fetchHumanityIds(
+    (pagination) => api.FlaggedHumanities({ pagination }).then((data) => data.adminPohFlaggedHumanities),
+    limit,
+  );
+
 // Past this many entries the list is a floor and a lookup miss says nothing.
 const LIST_FETCH_LIMIT = 1000;
 
@@ -87,6 +124,13 @@ export const useWhitelistedIds = () =>
   useQuery({
     queryKey: ['whitelisted', 'ids'],
     queryFn: () => fetchWhitelistedIds(LIST_FETCH_LIMIT),
+  });
+
+/** The flag list, under the key the flag mutation invalidates. Same unknowns as the whitelist. */
+export const useFlaggedIds = () =>
+  useQuery({
+    queryKey: ['flagged', 'ids'],
+    queryFn: () => fetchFlaggedIds(LIST_FETCH_LIMIT),
   });
 
 /** True or false when the list settles it; undefined while unknown, or cut off before this id. */

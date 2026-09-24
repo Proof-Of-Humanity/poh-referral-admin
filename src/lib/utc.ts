@@ -14,6 +14,11 @@ export const utcDayStart = (now: number) => {
 export const HOUR_MS = 60 * 60 * 1000;
 export const DAY_MS = 24 * HOUR_MS;
 
+/** Rounded down to the hour, so a query keyed on it refetches hourly instead of on every render. */
+export const hourFloor = (now: number) => Math.floor(now / HOUR_MS) * HOUR_MS;
+
+export const isInUtcMonth = (iso: string, now: number) => new Date(iso).getTime() >= utcMonthStart(now);
+
 /** Whole-day bounds for a `YYYY-MM-DD` input value, or null when it is not a date. */
 export const utcDayBounds = (day: string): { from: number; to: number } | null => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
