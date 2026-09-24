@@ -21,6 +21,7 @@ export const payoutStateDisplay: Record<ReferralPayoutFilter, StatusDisplay> = {
 // Only `verified` is green, because only `verified` clears the payout bot's ownership gate
 export const registryStatusDisplay: Record<RegistryStatus, StatusDisplay> = {
   verified: { label: 'Verified human', tone: 'success' },
+  challenged: { label: 'Challenged', tone: 'accent' },
   'revocation-pending': { label: 'Revocation pending', tone: 'danger' },
   expired: { label: 'Registration expired', tone: 'accent' },
   removed: { label: 'Removed from registry', tone: 'danger' },

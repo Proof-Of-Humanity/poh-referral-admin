@@ -2,7 +2,7 @@ import { ClientError } from 'graphql-request';
 
 import { Callout } from './callout';
 
-const errorMessage = (error: unknown): string => {
+export const errorMessage = (error: unknown): string => {
   // Without a GraphQL error to quote, the client's own message is the whole request and response
   // serialised (a gateway's HTML error page included), so only the status is worth showing.
   if (error instanceof ClientError)

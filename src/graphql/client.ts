@@ -25,7 +25,16 @@ const withSessionToken: SdkFunctionWrapper = async (request) => {
   }
 };
 
-export const api = getSdk(new GraphQLClient(env.graphqlUrl), withSessionToken);
+const client = new GraphQLClient(env.graphqlUrl);
+
+export const api = getSdk(client, withSessionToken);
+
+/**
+ * For documents assembled at runtime, such as one aliased count per referrer on the page. The
+ * generated SDK covers everything with a fixed shape; this goes through the same session wrapper.
+ */
+export const requestDocument = <T>(document: string, variables?: Record<string, unknown>) =>
+  withSessionToken((headers) => client.request<T>(document, variables, headers), 'dynamic', 'query', variables);
 
 // Mirrors MAX_REFERRAL_REASON_LENGTH enforced by the API.
 export const MAX_REASON_LENGTH = 500;

@@ -9,16 +9,13 @@ import { PersonIcon } from '../components/icons';
 import { Skeleton } from '../components/skeleton';
 import { humanityCourt, pohChains, stakeOfAbi } from '../config/poh-chain';
 import { wagmiConfig } from '../config/wagmi';
-import { fetchHumanityProfiles, type HumanityProfile } from '../graphql/subgraph';
+import { useHumanityProfiles, type HumanityProfile } from '../graphql/subgraph';
 import type { ReferralFieldsFragment as Referral } from '../graphql/generated';
 import { formatDateTime, formatPnk, formatRelative, shortAddress } from '../lib/format';
 import { registryStatusDisplay } from '../lib/status';
 
 export const ReferralDrawerRow = ({ referral }: { referral: Referral }) => {
-  const profiles = useQuery({
-    queryKey: ['poh-humanities', referral.refereeHumanityId, referral.referrerHumanityId],
-    queryFn: () => fetchHumanityProfiles([referral.refereeHumanityId, referral.referrerHumanityId]),
-  });
+  const profiles = useHumanityProfiles([referral.refereeHumanityId, referral.referrerHumanityId]);
 
   return (
     <tr className="border-b border-line/60 last:border-b-0">
