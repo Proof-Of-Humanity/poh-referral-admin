@@ -9,9 +9,9 @@ import {
   type AdminReferralFilter,
   type ReferralFieldsFragment as Referral,
 } from '../graphql/generated';
-import { fetchHumanityProfiles, type HumanityProfile, type RegistryStatus } from '../graphql/subgraph';
+import { fetchHumanityProfiles, type HumanityProfile } from '../graphql/subgraph';
 
-import type { FlagFilter, RegistryFilter } from './status';
+import type { FlagFilter, RegistryFilter, RegistryLookup } from './status';
 
 // The API refuses larger pages.
 const MAX_TAKE = 100;
@@ -107,9 +107,8 @@ export const scanReferrals = async (
   signal: AbortSignal,
 ): Promise<ReferralScan> => {
   // Cached on the API filter alone, so naming another side for a registry lookup does not page
-  // through Atlas again. Read and written by hand rather than fetched as a query of its own: this
-  // scan owns the request, so cancelling it stops the paging, and a read started before a review
-  // can never be joined and handed back as the result after it.
+  // through Atlas again. Read by hand, not as a query of its own: this scan owns the request, so
+  // cancelling it stops the paging, and a read started before a review is never joined after it.
   const cached = queryClient.getQueryState<Referral[]>(everyReferralKey(filter));
   const referrals =
     cached?.data !== undefined && !cached.isInvalidated && cached.dataUpdatedAt >= Date.now() - REFERRALS_FRESH_MS
@@ -144,15 +143,15 @@ export const registryOf = (
   scan: ReferralScan,
   party: keyof LookedUp,
   humanityId: string,
-): RegistryStatus | 'no-record' | undefined => {
+): RegistryLookup | undefined => {
   if (!scan.lookedUp[party]) return undefined;
   return scan.profiles.get(humanityId.toLowerCase())?.status ?? 'no-record';
 };
 
 const partyMatches = (
   filter: PartyFilter,
-  registry: RegistryStatus | 'no-record' | undefined,
-  flag: { isFlagged: boolean } | null | undefined,
+  registry: RegistryLookup | undefined,
+  flag: Referral['refereeFlag'],
 ) => {
   if (filter.registry === 'unverified' && registry === 'verified') return false;
   if (filter.registry !== '' && filter.registry !== 'unverified' && registry !== filter.registry) return false;

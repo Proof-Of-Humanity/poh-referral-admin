@@ -100,18 +100,14 @@ export const fetchHumanityProfiles = async (
     lowercased.slice(index * IDS_PER_QUERY, (index + 1) * IDS_PER_QUERY),
   );
   const requests = clients.flatMap(({ chain, client }) =>
-    chunks.map(
-      (chunk) => async () =>
-        (
-          await client.request<HumanityProfilesResponse>({
-            document: HUMANITY_PROFILES,
-            variables: { ids: chunk },
-            signal,
-          })
-        ).humanities.map(
-          (humanity) => ({ key: humanity.id.toLowerCase(), chainLabel: chain.label, humanity }),
-        ),
-    ),
+    chunks.map((chunk) => async () => {
+      const { humanities } = await client.request<HumanityProfilesResponse>({
+        document: HUMANITY_PROFILES,
+        variables: { ids: chunk },
+        signal,
+      });
+      return humanities.map((humanity) => ({ key: humanity.id.toLowerCase(), chainLabel: chain.label, humanity }));
+    }),
   );
 
   // Nothing is caught per chain or chunk: a half-answer is indistinguishable in the UI from a full

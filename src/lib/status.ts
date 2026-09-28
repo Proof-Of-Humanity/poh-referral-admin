@@ -34,15 +34,20 @@ export const registryStatusDisplay: Record<RegistryStatus, StatusDisplay> = {
 export const reviewStatusOptions = Object.values(PohReferralReviewStatus);
 export const payoutFilterOptions = Object.values(ReferralPayoutFilter);
 
-const registryStatusOptions = Object.keys(registryStatusDisplay) as RegistryStatus[];
+/** What a registry lookup finds for a humanity: its status, or nothing on any of the environment's subgraphs. */
+export type RegistryLookup = RegistryStatus | 'no-record';
 
 /**
- * What a registry filter can ask for: one resolved status, any status but `verified` (the only one
- * the payout bot accepts), or a humanity on none of the environment's subgraphs.
+ * What a registry filter can ask for: a lookup result, or any status but `verified` (the only one
+ * the payout bot accepts).
  */
-export type RegistryFilter = RegistryStatus | 'unverified' | 'no-record';
+export type RegistryFilter = RegistryLookup | 'unverified';
 
-export const registryFilterOptions: readonly RegistryFilter[] = [...registryStatusOptions, 'unverified', 'no-record'];
+export const registryFilterOptions: readonly RegistryFilter[] = [
+  ...(Object.keys(registryStatusDisplay) as RegistryStatus[]),
+  'unverified',
+  'no-record',
+];
 
 // A humanity on none of the subgraphs has no status to show, which a row must not dress up as one.
 export const noRecordDisplay: StatusDisplay = {
@@ -50,8 +55,8 @@ export const noRecordDisplay: StatusDisplay = {
   tone: 'muted',
 };
 
-/** Short enough for a table cell; the full label goes in its tooltip, and the drawer keeps the full one. */
-export const registryStatusBrief: Record<RegistryStatus | 'no-record', string> = {
+/** Short enough for a table cell; the full label goes in its tooltip. */
+export const registryStatusBrief: Record<RegistryLookup, string> = {
   verified: 'Verified',
   'revocation-pending': 'Revoking',
   expired: 'Expired',

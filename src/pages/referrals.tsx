@@ -40,16 +40,8 @@ import {
   type AdminReferralFilter,
   type ReferralFieldsFragment as Referral,
 } from '../graphql/generated';
-import type { RegistryStatus } from '../graphql/subgraph';
 import { formatDateTime, formatPnk, formatRelative, INVALID_ADDRESS_HINT } from '../lib/format';
-import {
-  referralMatches,
-  registryOf,
-  scanReferrals,
-  type LookedUp,
-  type PartyFilter,
-  type ReferralScan,
-} from '../lib/referral-scan';
+import { referralMatches, registryOf, scanReferrals, type LookedUp, type PartyFilter } from '../lib/referral-scan';
 import {
   flagFilterOptions,
   noRecordDisplay,
@@ -61,6 +53,7 @@ import {
   reviewStatusDisplay,
   reviewStatusOptions,
   type RegistryFilter,
+  type RegistryLookup,
   type StatusDisplay,
 } from '../lib/status';
 import { useNow } from '../lib/use-now';
@@ -75,8 +68,7 @@ const unknownStatusDisplay = (status: string): StatusDisplay => ({ label: status
 const enumFromSearchParam = <T extends string>(value: string | null, options: readonly T[]): T | '' =>
   options.find((option) => option === value) ?? '';
 
-// A day the URL cannot mean is dropped like any other junk parameter, rather than read as a range
-// that starts after it ends.
+// A day the URL cannot mean is dropped like any other junk parameter.
 const dayFromSearchParam = (value: string | null) => (value && utcDayBounds(value) ? value : '');
 
 const timeRangeOptions = ['today', '7d', 'month', 'custom'] as const;
@@ -88,14 +80,17 @@ const timeRangeLabels: Record<TimeRange, string> = {
   custom: 'Created between…',
 };
 
-type CreatedAtBounds = { createdAtFrom?: string; createdAtTo?: string };
-
 /**
  * The bot counts in UTC, so the presets do too: "Today" starts at 00:00 UTC and "Last 7 days" is
  * today plus the six days before it, each snapped to a day boundary so the query key stays put
  * across renders. Null means the custom range starts after it ends.
  */
-const createdAtBounds = (range: TimeRange | '', from: string, to: string, now: number): CreatedAtBounds | null => {
+const createdAtBounds = (
+  range: TimeRange | '',
+  from: string,
+  to: string,
+  now: number,
+): { createdAtFrom?: string; createdAtTo?: string } | null => {
   const iso = (ms: number) => new Date(ms).toISOString();
   switch (range) {
     case '':
@@ -176,7 +171,7 @@ const payoutFilterLabels: Record<ReferralPayoutFilter, string> = {
 
 const chainNames = pohChains.map((chain) => chain.label).join(' and ');
 
-// Every URL parameter this page reads; the last list is the subset only the browser can apply.
+// Every URL parameter this page reads.
 const filterParams = [
   'reviewStatus',
   'payout',
@@ -300,7 +295,7 @@ export const ReferralsPage = () => {
   });
   // A stand-in that did not look up a side a filter now names would file that side under "No record".
   // A disabled query still hands back its last result, so outside in-browser mode there is no scan.
-  const scanned: ReferralScan | undefined =
+  const scanned =
     filtersInBrowser &&
     scan.data &&
     (!lookedUp.referee || scan.data.lookedUp.referee) &&
@@ -313,9 +308,9 @@ export const ReferralsPage = () => {
 
   const lastMatchingPage = matching ? Math.max(0, Math.ceil(matching.length / PAGE_SIZE) - 1) : 0;
   // Clamped in one step: a synchronous slice would otherwise step back one empty page per render.
-  if (filtersInBrowser && matching && !scan.isPlaceholderData && page > lastMatchingPage) setPage(lastMatchingPage);
+  if (matching && !scan.isPlaceholderData && page > lastMatchingPage) setPage(lastMatchingPage);
   // Read from a settled page only: the stand-in while an earlier page loads is this one again, and
-  // stepping back through stand-ins would loop. The count says where the last page is.
+  // stepping back through stand-ins would loop.
   const lastApiPage = apiPage.data ? Math.max(0, Math.ceil(apiPage.data.count / PAGE_SIZE) - 1) : 0;
   if (!filtersInBrowser && apiPage.data && !apiPage.isPlaceholderData && page > lastApiPage) setPage(lastApiPage);
   const browserPage = Math.min(page, lastMatchingPage);
@@ -379,55 +374,6 @@ export const ReferralsPage = () => {
       </span>
     );
   })();
-
-  const partyFields = (
-    party: 'referee' | 'referrer',
-    field: ReturnType<typeof useFilterDraft>,
-    inputState: ReturnType<typeof addressInputState>,
-    partyFilter: PartyFilter,
-  ) => (
-    <>
-      <SearchInput
-        aria-label={`${party === 'referee' ? 'Referee' : 'Referrer'} humanity address`}
-        placeholder="Humanity address, 0x…"
-        data-active={inputState === 'valid'}
-        aria-invalid={inputState === 'invalid'}
-        {...field}
-      />
-      <Select
-        aria-label={`${party === 'referee' ? 'Referee' : 'Referrer'} registry status`}
-        data-active={partyFilter.registry !== ''}
-        value={partyFilter.registry}
-        onChange={(event) => setFilter(`${party}Registry`, event.target.value)}
-      >
-        <option value="">Any registry status</option>
-        <option value="verified">{registryFilterLabel('verified')}</option>
-        <option value="unverified">{registryFilterLabel('unverified')}</option>
-        <optgroup label="Not verified, by status">
-          {registryFilterOptions
-            .filter((option) => option !== 'verified' && option !== 'unverified')
-            .map((option) => (
-              <option key={option} value={option}>
-                {registryFilterLabel(option)}
-              </option>
-            ))}
-        </optgroup>
-      </Select>
-      <Select
-        aria-label={`${party === 'referee' ? 'Referee' : 'Referrer'} flag`}
-        data-active={partyFilter.flag !== ''}
-        value={partyFilter.flag}
-        onChange={(event) => setFilter(`${party}Flag`, event.target.value)}
-      >
-        <option value="">Flagged or not</option>
-        {flagFilterOptions.map((option) => (
-          <option key={option} value={option}>
-            {flagFilterLabels[option]}
-          </option>
-        ))}
-      </Select>
-    </>
-  );
 
   return (
     <>
@@ -506,10 +452,22 @@ export const ReferralsPage = () => {
               )}
             </FilterRow>
             <FilterRow title="Referee" layout="party">
-              {partyFields('referee', refereeField, refereeState, refereeFilter)}
+              <PartyFields
+                party="referee"
+                address={refereeField}
+                addressState={refereeState}
+                filter={refereeFilter}
+                onFilter={setFilter}
+              />
             </FilterRow>
             <FilterRow title="Referrer" layout="party">
-              {partyFields('referrer', referrerField, referrerState, referrerFilter)}
+              <PartyFields
+                party="referrer"
+                address={referrerField}
+                addressState={referrerState}
+                filter={referrerFilter}
+                onFilter={setFilter}
+              />
             </FilterRow>
           </div>
         </div>
@@ -522,7 +480,7 @@ export const ReferralsPage = () => {
         onPageChange={setPage}
         columnHeadings={['', 'Referee', 'Referrer', 'Review', 'Payout', 'Reward', 'Created', '']}
         noRowsMessage={
-          filtersInBrowser && scanned && scanned.referrals.length > 0 ? (
+          scanned && scanned.referrals.length > 0 ? (
             <>
               {scanned.referrals.length === 1
                 ? 'The only referral does not match the registry and flag filters'
@@ -607,6 +565,65 @@ const FilterRow = ({
   );
 };
 
+const PartyFields = ({
+  party,
+  address,
+  addressState,
+  filter,
+  onFilter,
+}: {
+  party: 'referee' | 'referrer';
+  address: ReturnType<typeof useFilterDraft>;
+  addressState: ReturnType<typeof addressInputState>;
+  filter: PartyFilter;
+  onFilter: (key: FilterParam, value: string) => void;
+}) => {
+  const label = party === 'referee' ? 'Referee' : 'Referrer';
+  return (
+    <>
+      <SearchInput
+        aria-label={`${label} humanity address`}
+        placeholder="Humanity address, 0x…"
+        data-active={addressState === 'valid'}
+        aria-invalid={addressState === 'invalid'}
+        {...address}
+      />
+      <Select
+        aria-label={`${label} registry status`}
+        data-active={filter.registry !== ''}
+        value={filter.registry}
+        onChange={(event) => onFilter(`${party}Registry`, event.target.value)}
+      >
+        <option value="">Any registry status</option>
+        <option value="verified">{registryFilterLabel('verified')}</option>
+        <option value="unverified">{registryFilterLabel('unverified')}</option>
+        <optgroup label="Not verified, by status">
+          {registryFilterOptions
+            .filter((option) => option !== 'verified' && option !== 'unverified')
+            .map((option) => (
+              <option key={option} value={option}>
+                {registryFilterLabel(option)}
+              </option>
+            ))}
+        </optgroup>
+      </Select>
+      <Select
+        aria-label={`${label} flag`}
+        data-active={filter.flag !== ''}
+        value={filter.flag}
+        onChange={(event) => onFilter(`${party}Flag`, event.target.value)}
+      >
+        <option value="">Flagged or not</option>
+        {flagFilterOptions.map((option) => (
+          <option key={option} value={option}>
+            {flagFilterLabels[option]}
+          </option>
+        ))}
+      </Select>
+    </>
+  );
+};
+
 const PartyCell = ({
   humanityId,
   registry,
@@ -614,7 +631,7 @@ const PartyCell = ({
 }: {
   humanityId: string;
   /** Present only when a registry filter looked this party up. */
-  registry: RegistryStatus | 'no-record' | undefined;
+  registry: RegistryLookup | undefined;
   flagged: boolean;
 }) => (
   <td className="py-3 pr-3">
@@ -629,7 +646,7 @@ const PartyCell = ({
 );
 
 // Quiet on purpose: the flag and the review and payout pills are decisions, and this is context.
-const RegistryLine = ({ registry }: { registry: RegistryStatus | 'no-record' }) => {
+const RegistryLine = ({ registry }: { registry: RegistryLookup }) => {
   const display = registry === 'no-record' ? noRecordDisplay : registryStatusDisplay[registry];
   return (
     <div className="mt-1 flex items-center gap-1.5 text-[11.5px] whitespace-nowrap text-fg-muted" title={display.label}>
@@ -648,8 +665,8 @@ const ReferralRow = ({
   onToggle,
 }: {
   referral: Referral;
-  refereeRegistry: RegistryStatus | 'no-record' | undefined;
-  referrerRegistry: RegistryStatus | 'no-record' | undefined;
+  refereeRegistry: RegistryLookup | undefined;
+  referrerRegistry: RegistryLookup | undefined;
   onReview: (referral: Referral) => void;
   expanded: boolean;
   onToggle: () => void;
