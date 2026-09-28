@@ -1,4 +1,5 @@
 import type { Tone } from '../components/tone';
+import { pohChains } from '../config/poh-chain';
 import { PohReferralReviewStatus, ReferralPayoutFilter } from '../graphql/generated';
 import type { RegistryStatus } from '../graphql/subgraph';
 
@@ -32,3 +33,35 @@ export const registryStatusDisplay: Record<RegistryStatus, StatusDisplay> = {
 
 export const reviewStatusOptions = Object.values(PohReferralReviewStatus);
 export const payoutFilterOptions = Object.values(ReferralPayoutFilter);
+
+const registryStatusOptions = Object.keys(registryStatusDisplay) as RegistryStatus[];
+
+/**
+ * What a registry filter can ask for: one resolved status, any status but `verified` (the only one
+ * the payout bot accepts), or a humanity on none of the environment's subgraphs.
+ */
+export type RegistryFilter = RegistryStatus | 'unverified' | 'no-record';
+
+export const registryFilterOptions: readonly RegistryFilter[] = [...registryStatusOptions, 'unverified', 'no-record'];
+
+// A humanity on none of the subgraphs has no status to show, which a row must not dress up as one.
+export const noRecordDisplay: StatusDisplay = {
+  label: `No record on ${pohChains.map((chain) => chain.label).join(' or ')}`,
+  tone: 'muted',
+};
+
+/** Short enough for a table cell; the full label goes in its tooltip, and the drawer keeps the full one. */
+export const registryStatusBrief: Record<RegistryStatus | 'no-record', string> = {
+  verified: 'Verified',
+  'revocation-pending': 'Revoking',
+  expired: 'Expired',
+  removed: 'Removed',
+  rejected: 'Rejected',
+  'in-review': 'In review',
+  'needs-vouch': 'Needs vouch',
+  'not-registered': 'Not registered',
+  'no-record': 'No record',
+};
+
+export const flagFilterOptions = ['flagged', 'unflagged'] as const;
+export type FlagFilter = (typeof flagFilterOptions)[number];

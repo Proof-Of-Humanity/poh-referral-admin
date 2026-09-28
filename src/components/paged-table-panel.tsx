@@ -36,14 +36,21 @@ export const PagedTablePanel = ({
   pausedReason,
   children,
 }: {
-  pageQuery: { isPending: boolean; isFetching: boolean; error: unknown; data: PageOfRows | undefined };
+  pageQuery: {
+    isPending: boolean;
+    isFetching: boolean;
+    /** The rows on screen belong to the previous filters or page, and are shown only until the new ones land. */
+    isPlaceholderData?: boolean;
+    error: unknown;
+    data: PageOfRows | undefined;
+  };
   /** Zero-based, matching the `skip` the API pages with. */
   pageIndex: number;
   rowsPerPage: number;
   onPageChange: (pageIndex: number) => void;
   columnHeadings: string[];
   /** Shown when the query succeeded and came back with nothing. */
-  noRowsMessage: string;
+  noRowsMessage: ReactNode;
   /** Why no query is running, so a deliberate pause never looks like a load that hangs. */
   pausedReason?: string;
   /** The `<tr>` rows for `pageQuery.data.items`. */
@@ -108,10 +115,12 @@ export const PagedTablePanel = ({
           {pageQuery.error !== null && <ErrorState error={pageQuery.error} />}
           {rows?.items.length === 0 && <EmptyState>{noRowsMessage}</EmptyState>}
           {hasRows && (
-            // Fading the old page is enough to say "loading"; replacing it with placeholders is not.
+            // Fading the old page is enough to say "loading"; replacing it with placeholders is not. Rows
+            // kept from other filters are inert, so nothing outside the current filters can be acted on.
             <div
               className={cx('overflow-x-auto transition-opacity', pageQuery.isFetching && 'opacity-50')}
               aria-busy={pageQuery.isFetching}
+              inert={pageQuery.isPlaceholderData}
             >
               <table className={tableClass}>
                 {headerRow}
@@ -120,7 +129,8 @@ export const PagedTablePanel = ({
             </div>
           )}
           {hasRows && (
-            <div className="mt-4">
+            // Paging from rows that are about to be replaced would land on a page of the new result unseen.
+            <div className="mt-4" inert={pageQuery.isPlaceholderData}>
               <Pagination
                 page={pageIndex}
                 pageSize={rowsPerPage}

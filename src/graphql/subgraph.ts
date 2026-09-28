@@ -4,6 +4,11 @@ import { pohChains } from '../config/poh-chain';
 
 const clients = pohChains.map((chain) => ({ chain, client: new GraphQLClient(chain.subgraphUrl) }));
 
+// One request never asks for more ids than its `first` can return, so a larger set goes in chunks.
+const IDS_PER_QUERY = 100;
+// Scanning every referral can mean dozens of chunks; sent in waves, they do not all hit the gateway at once.
+const REQUESTS_IN_FLIGHT = 6;
+
 // The claim request deliberately does not select its claimer: a withdrawn or lost claim can belong
 // to a different person than the current registration, so the stake read must only ever follow the
 // registration's claimer.
@@ -84,22 +89,38 @@ const resolveOnChain = (humanity: SubgraphHumanity, chainLabel: string, pendingR
   return { profile, liveliness };
 };
 
-export const fetchHumanityProfiles = async (ids: string[]): Promise<Map<string, HumanityProfile>> => {
+export const fetchHumanityProfiles = async (
+  ids: string[],
+  signal?: AbortSignal,
+): Promise<Map<string, HumanityProfile>> => {
   // The Graph matches Bytes case-sensitively.
   const lowercased = [...new Set(ids.map((id) => id.toLowerCase()))];
 
-  // Nothing is caught per chain: a half-answer is indistinguishable in the UI from a full one, so a
-  // failing chain is shown as an error instead.
-  const responses = await Promise.all(
-    clients.map(async ({ chain, client }) => ({
-      chain,
-      data: await client.request<HumanityProfilesResponse>(HUMANITY_PROFILES, { ids: lowercased }),
-    })),
+  const chunks = Array.from({ length: Math.ceil(lowercased.length / IDS_PER_QUERY) }, (_, index) =>
+    lowercased.slice(index * IDS_PER_QUERY, (index + 1) * IDS_PER_QUERY),
+  );
+  const requests = clients.flatMap(({ chain, client }) =>
+    chunks.map(
+      (chunk) => async () =>
+        (
+          await client.request<HumanityProfilesResponse>({
+            document: HUMANITY_PROFILES,
+            variables: { ids: chunk },
+            signal,
+          })
+        ).humanities.map(
+          (humanity) => ({ key: humanity.id.toLowerCase(), chainLabel: chain.label, humanity }),
+        ),
+    ),
   );
 
-  const rows = responses.flatMap(({ chain, data }) =>
-    data.humanities.map((humanity) => ({ key: humanity.id.toLowerCase(), chainLabel: chain.label, humanity })),
-  );
+  // Nothing is caught per chain or chunk: a half-answer is indistinguishable in the UI from a full
+  // one, so any failing request is shown as an error instead.
+  const rows: { key: string; chainLabel: string; humanity: SubgraphHumanity }[] = [];
+  for (let start = 0; start < requests.length; start += REQUESTS_IN_FLIGHT) {
+    const wave = await Promise.all(requests.slice(start, start + REQUESTS_IN_FLIGHT).map((request) => request()));
+    rows.push(...wave.flat());
+  }
 
   // The payout bot ORs hasPendingRevocation across the chain set, so reading only the winning
   // chain's flag would show Verified for a party the bot refuses.
